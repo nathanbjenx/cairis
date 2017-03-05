@@ -79,12 +79,7 @@ def initialiseCairisDbSettings(cfgDict):
   b.tmpDir = cfgDict['tmp_dir']
   b.cairisRoot = cfgDict['root']
   b.imageDir = os.path.abspath(cfgDict['default_image_dir'])
-  b.rPasswd = ''
-  
-  try:
-    b.rPasswd = cfgDict['rpasswd']
-  except KeyError:
-    pass
+
 
 def setupDocBookConfig():
   b = Borg()
@@ -187,8 +182,7 @@ def dInitialise():
     'dbPort': b.dbPort,
     'dbUser': b.dbUser,
     'dbPasswd': b.dbPasswd,
-    'dbName': b.dbName,
-    'rPasswd': b.rPasswd
+    'dbName': b.dbName
   }
 
   db_proxy = MySQLDatabaseProxy(

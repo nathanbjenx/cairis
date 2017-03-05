@@ -90,6 +90,7 @@ function viewThreat(thrName) {
     success: function (data) {
       activeElement("objectViewer");
       fillOptionMenu("fastTemplates/editThreatOptions.html", "#objectViewer", null, true, true, function () {
+        $("#editThreatOptionsform").validator();
         $("#UpdateThreat").text("Update");
         getThreatTypes(function createTypes(types) {
           $.each(types, function (index, type) {
@@ -111,7 +112,6 @@ function viewThreat(thrName) {
         $.each(data.theEnvironmentProperties, function (index, env) {
           appendThreatEnvironment(env.theEnvironmentName)
         });
-        $("#editThreatOptionsform").validator('update');
         $("#theThreatEnvironments").find(".threatEnvironments:first").trigger('click');
       });
     },

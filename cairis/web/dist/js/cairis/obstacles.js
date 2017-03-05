@@ -432,6 +432,7 @@ function viewObstacle(obsName){
 function fillObstacleOptionMenu(data,callback){
   activeElement("objectViewer");
   fillOptionMenu("fastTemplates/editObstaclesOptions.html","#objectViewer",null,true,true, function(){
+    $("#editObstacleOptionsForm").validator();
     $("#updateObstacleButton").text("Update");
     if(data != null) {
       $.session.set("Obstacle", JSON.stringify(data));
@@ -443,7 +444,6 @@ function fillObstacleOptionMenu(data,callback){
       $.each(data.theEnvironmentProperties, function (index, prop) {
         appendObstacleEnvironment(prop.theEnvironmentName);
       });
-      $("#editObstacleOptionsForm").validator('update');
       $("#theObstacleEnvironments").find(".obstacleEnvProperties:first").trigger('click');
     }
     else {

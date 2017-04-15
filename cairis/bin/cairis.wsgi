@@ -20,6 +20,8 @@ __author__ = 'Shamal Faily'
 
 import os
 import sys
+sys.path.insert(0,'/home/cairisuser/cairis/cairis')
+os.environ['CAIRIS_CFG'] = '/home/cairisuser/cairis.cnf'
 from cairis.daemon import create_app
 from cairis.daemon.CairisHTTPError import CairisHTTPError
 

@@ -452,7 +452,3 @@ class CountermeasureTaskMessage(DefaultMessage):
 class SummaryMessage(DefaultMessage):
   resource_fields = gen_message_fields(ModelDefinitions.SummaryModel)
   required = DefaultMessage.required
-
-class WeaknessAnalysisMessage(DefaultMessage):
-  resource_fields = gen_message_fields(ModelDefinitions.WeaknessAnalysisModel)
-  required = DefaultMessage.required

@@ -37,7 +37,7 @@ class CairisDAO(object):
     self.logger.setLevel(b.logLevel)
 
   def close(self):
-    if self.db_proxy.conn is not None:
+    if self.db_proxy.conn.open:
       self.db_proxy.close()
     self.logger.debug('Connection closed')
 
@@ -94,7 +94,7 @@ class CairisDAO(object):
           message='The database connection could not be created.'
         )
       elif isinstance(db_proxy, MySQLDatabaseProxy):
-        if db_proxy.conn is None:
+        if db_proxy.conn.open != 1:
           db_proxy.reconnect(session_id=session_id)
         return db_proxy
       else:

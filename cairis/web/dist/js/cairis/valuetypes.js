@@ -194,7 +194,7 @@ $(document).on('click', 'td.deleteValueTypeButton', function (e) {
   e.preventDefault();
   var vtName = $(this).find('i').attr("value");
   var valueType = $.session.get("value_type");
-  deleteObject(valueType,vtName,function(vtName) {
+  deleteObject('value_type',vtName,function(vtName) {
     $.ajax({
       type: "DELETE",
       dataType: "json",
@@ -232,7 +232,7 @@ $(document).on("click", "#addNewValueType", function () {
   });
 });
 
-function putValueType(vt, oldName, callback){
+function putValueType(vt, oldName, usePopup, callback){
   var output = {};
   output.object = vt;
   output.session_id = $.session.get('sessionID');
@@ -251,14 +251,18 @@ function putValueType(vt, oldName, callback){
     data: output,
     url: serverIP + "/api/value_types/type/" + valueType + "/environment/all/name/" + oldName.replace(" ", "%20").replace("/","%47") + "?session_id=" + $.session.get('sessionID'),
     success: function (data) {
-      showPopup(true);
+      if(usePopup) {
+        showPopup(true);
+      }
       if(jQuery.isFunction(callback)){
         callback();
       }
     },
     error: function (xhr, textStatus, errorThrown) {
-      var error = JSON.parse(xhr.responseText);
-      showPopup(false, String(error.message));
+      if(usePopup) {
+        var error = JSON.parse(xhr.responseText);
+        showPopup(false, String(error.message));
+      }
       debugLogger(String(this.url));
       debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
     }

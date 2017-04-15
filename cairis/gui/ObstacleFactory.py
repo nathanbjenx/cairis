@@ -15,13 +15,19 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ObstacleParameters import ObstacleParameters
-from ObstacleEnvironmentProperties import ObstacleEnvironmentProperties
+from cairis.core.ObstacleParameters import ObstacleParameters
+from cairis.core.ObstacleEnvironmentProperties import ObstacleEnvironmentProperties
 
 __author__ = 'Shamal Faily'
 
-def build(envName,obsName,excDim,excVal,excCat,excDef):
+def build(envName,excDetails):
+
+  obsName = excDetails[0]
+  excDim = excDetails[1]
+  excVal = excDetails[2]
+  excDef = excDetails[4]
+  excCat = excDetails[3]
   sgRef = [(excVal,excDim,'obstruct','No','use case exception')]
   envProperties = [ObstacleEnvironmentProperties(envName,'',excDef,excCat,sgRef,[])]
-  parameters = ObstacleParameters(obsName,'Generated from exception',[],envProperties)
+  parameters = ObstacleParameters(obsName,[],envProperties)
   return parameters 

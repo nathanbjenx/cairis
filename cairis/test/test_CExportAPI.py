@@ -20,9 +20,7 @@ from urllib import quote
 from StringIO import StringIO
 from cairis.test.CairisDaemonTestCase import CairisDaemonTestCase
 from cairis.mio.ModelImport import importModelFile
-from cairis.mio.ModelImport import importComponentViewFile
 from cairis.mio.TVTypeContentHandler import TVTypeContentHandler
-from cairis.mio.ArchitecturalPatternContentHandler import ArchitecturalPatternContentHandler
 import os
 import xml.sax
 
@@ -32,8 +30,7 @@ class CExportTests(CairisDaemonTestCase):
 
   @classmethod
   def setUpClass(cls):
-    importModelFile(os.environ['CAIRIS_SRC'] + '/test/webinos.xml',1,'test')
-    importComponentViewFile(os.environ['CAIRIS_SRC'] + '/test/ContextPolicyManagement.xml','test')
+    importModelFile(os.environ['CAIRIS_SRC'] + '/../examples/exemplars/NeuroGrid/NeuroGrid.xml',1,'test')
 
   def setUp(self):
     self.logger = logging.getLogger(__name__)
@@ -45,11 +42,3 @@ class CExportTests(CairisDaemonTestCase):
     rv = self.app.get(url)
     self.assertIsNotNone(rv.data, 'No response')
     self.assertIsNone(xml.sax.parseString(rv.data,TVTypeContentHandler()))
-
-  def test_cexport_architecturalpattern_get(self):
-    method = 'test_cexport_architecturalpattern_get?session_id=test'
-    url = '/api/export/file/architectural_pattern/Context%20Policy%20Management?session_id=test'
-    self.logger.info('[%s] URL: %s', method, url)
-    rv = self.app.get(url)
-    self.assertIsNotNone(rv.data, 'No response')
-    self.assertIsNone(xml.sax.parseString(rv.data,ArchitecturalPatternContentHandler()))

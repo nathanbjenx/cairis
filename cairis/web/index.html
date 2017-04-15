@@ -11,7 +11,6 @@
   <script src="plugins/jquery-3.1.1/jquery-3.1.1.min.js"></script> 
   <script src="plugins/jquery-ui-1.12.1/jquery-ui.js"></script> 
   <script src="plugins/jquery-migrate/jquery-migrate-3.0.0.min.js"></script> 
-  <script src="plugins/trello/client.js?key=f8371ed97c21a7bab5774e45d014be3e"></script>
 
   <script src="bootstrap/js/bootstrap.min.js"></script> 
 
@@ -34,7 +33,7 @@
   <link href="plugins/d3/nv.d3.min.css" rel="stylesheet">
   <script src="plugins/d3/d3.min.js"></script>
   <script src="plugins/d3/nv.d3.min.js"></script>
-  <script src="https://api.trello.com/1/client.js?key=f8371ed97c21a7bab5774e45d014be3e"></script>
+
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -66,11 +65,8 @@
               <li><a id="openClick" href="#">Open Database</a></li>
               <li><a id="deleteClick" href="#">Delete Database</a></li>
               <li><a id="newClick" href="#">New</a></li>
-              <li><a id="importClick" href="#">Import Model</a></li>
-              <li><a id="fromTrello" href="#">Import from Trello</a></li>
-              <li><a id="exportClick" href="#">Export Model</a></li>
-              <li><a id="exportArchitecturalPatternClick" href="#">Export Architectural Pattern</a></li>
-              <li><a id="toTrello" href="#">Export to Trello</a></li>
+              <li><a id="importClick" href="#">Import</a></li>
+              <li><a id="exportClick" href="#">Export</a></li>
               <li><a id="genDocClick" href="#">Documentation</a></li>
               <li><a id="projectClick" href="#">Properties</a></li>
             </ul>
@@ -447,6 +443,11 @@
     </footer>
     <!-- The configuration dialog window-->
   </div>
+  <div class="comboboxD" id="comboboxDialog" title="Dialog">
+    <label for="comboboxDialogSelect" class="control-label"> Choose the environment</label>
+    <select class="comboboxD form-control" id="comboboxDialogSelect">
+    </select>
+  </div> 
 
   <div class="modal fade" id="chooseEnvironment" tabindex="-1" role="dialog" aria-labelledby="ce_label">
     <div class="modal-dialog" role="document">
@@ -468,78 +469,6 @@
     </div>
   </div>
 
-  <div class="modal fade" id="typeOfFileDialog" tabindex="-1" role="dialog" aria-labelledby="tofd_label">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="chooseTitle">Select model type</h4>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <select name="theImportModelType" id="theImportModelType" class="form-control">
-              <option>Model</option>
-              <option>Project data</option>
-              <option>Requirements</option>
-              <option>Risk Analysis</option>
-              <option>Usability</option>
-              <option>Misusability</option>
-              <option>Associations</option>
-              <option>Threat and Vulnerability Types</option>
-              <option>Domain Values</option>
-              <option>Threat and Vulnerability Directory</option>
-              <option>Security Pattern</option>
-              <option>Architectural Pattern</option>
-              <option>Attack Pattern</option>
-              <option>Synopses</option>
-              <option>Assets</option>
-              <option>Processes</option>
-              <option>Locations</option>
-            </select>
-          </div>
-          </br>
-          <div class="form-group">
-            <input class="form-control" type="file" accept="text/xml" onchange="readImportFile(event)" id="theImportModelFile" name="theImportModelFile" /> 
-          </div> 
-        </div>
-        <div class="modal-footer">
-          <div class="form-group col-md-2 col-md-offset-5">
-            <button type="button" id="importModelFileButton" class="btn btn-primary">Import</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="chooseLocationsEnvironmentDialog" tabindex="-1" role="dialog" aria-labelledby="cled_label">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="chooseTitle">Choose the location and environment</h4>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="chooseLELocationsSelector" class="control-label">Locations</label>
-            <select class="form-control" id="chooseLELocationsSelector">
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="chooseLEEnvironmentsSelector" class="control-label">Environment</label>
-            <select class="form-control" id="chooseLEEnvironmentsSelector">
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <div class="form-group col-md-2 col-md-offset-5">
-            <button type="button" id="chooseLocationEnvironmentButton" class="btn btn-primary">Ok</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
   <div class="modal fade" id="chooseDatabase" tabindex="-1" role="dialog" aria-labelledby="cd_label">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -554,26 +483,6 @@
         <div class="modal-footer">
           <div class="form-group col-md-2 col-md-offset-5">
             <button type="button" id="chooseDatabaseButton" class="btn btn-primary">Ok</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="chooseArchitecturalPattern" tabindex="-1" role="dialog" aria-labelledby="cap_label">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="chooseTitle">Choose architectural pattern</h4>
-        </div>
-        <div class="modal-body">
-          <select class="form-control" id="chooseArchitecturalPatternSelect">
-          </select>
-        </div>
-        <div class="modal-footer">
-          <div class="form-group col-md-2 col-md-offset-5">
-            <button type="button" id="chooseArchitecturalPatternButton" class="btn btn-primary">Ok</button>
           </div>
         </div>
       </div>
@@ -606,6 +515,189 @@
   <div class="popupMessage" style="display:none;" >
     <div class="Succes"><i class="fa fa-check fa-2x"></i><div class="infoText">Success</div></div>
     <div class="Fail"><i class="fa fa-exclamation fa-2x"></i><div class="infoText">Something went wrong...<p class="faultInfo"></p></div></div>
+  </div>
+  <div id="ChooseAssetDialog" title="Choose an Asset" style="display: none">
+    <select class="form-control">
+    </select>
+  </div>
+  <div id="ChooseRequirementDialog" title="Choose a requirement" style="display: none">
+    <select class="form-control">
+    </select>
+  </div>
+  <div id="ChooseTargetDialog" title="Choose a target" style="display: none">
+    <div class="form-group">
+      <label for="chooseTarget" class="control-label">Target</label>
+      <select id="chooseTarget" class="form-control">
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="chooseEffectiveness" class="control-label">Effectiveness</label>
+      <select id="chooseEffectiveness" class="form-control">
+      <option id="None">None</option>
+      <option id="Low">Low</option>
+      <option id="Medium">Medium</option>
+      <option id="High">High</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="enterRationale" class="control-label">Rationale</label>
+      <textarea rows="4" class="form-control" id="enterRationale" data-error="Rationale is required" required></textarea>
+    </div>
+  </div>
+  <div id="ChooseConcernDialog" title="Choose a task concern" style="display: none">
+    <select class="form-control">
+    </select>
+  </div>
+  <div id="ChooseRoleDialog" title="Choose a role" style="display: none">
+    <select class="form-control">
+    </select>
+  </div>
+  <div id="ChooseResponseDialog" title="Select response" style="display: none">
+    <select class="form-control">
+      <option id="Accept">Accept</option>
+      <option id="Transfer">Transfer</option>
+      <option id="Mitigate">Mitigate</option>
+    </select>
+  </div>
+  <div id="EnterUseCaseStep" title="Enter use case step" style="display: none">
+    <textarea id="theStep" style="width: 100%" class="form-control"></textarea>
+  </div>
+  <div id="ChooseMotivationsDialog" title="Choose a motivation" style="display: none">
+    <select class="form-control">
+    </select>
+  </div>
+  <div id="ChooseEnvAssetsDialog" title="Choose a motivation" style="display: none">
+    <select class="form-control">
+    </select>
+  </div>
+  <div id="ChooseRoleForResponse" title="Add a role cost" style="display: none">
+    <label for="theNewRole" class="control-label">Role</label>
+    <select id="theNewRole" class="form-control">
+    </select>
+    <br/>
+    <label for="theRoleCost" class="control-label">Cost</label>
+    <select id="theRoleCost" class="form-control">
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+    </select>
+  </div>
+  <div id="ChoosePersonaForTask" title="Add a participating persona" style="display: none">
+    <label for="theTaskPersona" class="control-label">Persona</label>
+    <select class="form-control" id="theTaskPersona">
+    </select>
+    <br/>
+    <label for="theTaskDuration" class="control-label">Duration</label>
+    <select class="form-control" id="theTaskDuration">
+      <option id="Low">Seconds</option>
+      <option id="Medium">Minutes</option>
+      <option id="High">Hours or Longer</option>
+    </select>
+    <label for="theTaskFrequency" class="control-label">Frequency</label>
+    <select class="form-control" id="theTaskFrequency">
+      <option id="Low">Hours or more</option>
+      <option id="Medium">Daily - Weekly</option>
+      <option id="High">Monthly or less</option>
+    </select>
+    <label for="theTaskDemands" class="control-label">Demands</label>
+    <select id="theTaskDemands" class="form-control">
+      <option id="None">None</option>
+      <option id="Low">Low</option>
+      <option id="Medium">Medium</option>
+      <option id="High">High</option>
+    </select>
+    <label for="theTaskGoalConflict" class="control-label">Goal Conflict</label>
+    <select id="theTaskGoalConflict" class="form-control">
+      <option id="None">None</option>
+      <option id="Low">Low</option>
+      <option id="Medium">Medium</option>
+      <option id="High">High</option>
+    </select>
+  </div>
+  <div id="addAttackerPropertyDialog" style="display: none">
+    <div class="form-group">
+      <label for="theCap" class="control-label">Property</label>
+      <select name="theCap" id="theCap" class="form-control" style="float: right">
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="thePropValue" class="control-label">Value</label>
+      <select name='thePropValue' class="form-control" id="thePropValue" style="float: right">
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+    </div>
+  </div>
+  <div id="EditCountermeasureTaskDialog" title="Edit Impacted Task" style="display: none">
+    <div class="form-group">
+    <label for="theTask" class="control-label">Task</label>
+    <input class="form-control" type="text" name="theTask" id="theTask" readonly>
+    <label for="thePersona" class="control-label">Persona</label>
+    <input class="form-control" type="text" name="thePersona" id="thePersona" readonly>
+    <label for="theDuration" class="control-label">Duration</label>
+    <select class="form-control" id="theDuration">
+      <option id="High Help">High Help</option>
+      <option id="Medium Help">Medium Help</option>
+      <option id="Low Help">Low Help</option>
+      <option id="None">None</option>
+      <option id="Low Hindrance">Low Hindrance</option>
+      <option id="Medium Hindrance">Medium Hindrance</option>
+      <option id="High Hindrance">High Hindrance</option>
+    </select>
+    <label for="theFrequency" class="control-label">Frequency</label>
+    <select class="form-control" id="theFrequency">
+      <option id="High Help">High Help</option>
+      <option id="Medium Help">Medium Help</option>
+      <option id="Low Help">Low Help</option>
+      <option id="None">None</option>
+      <option id="Low Hindrance">Low Hindrance</option>
+      <option id="Medium Hindrance">Medium Hindrance</option>
+      <option id="High Hindrance">High Hindrance</option>
+    </select>
+    <label for="theDemands" class="control-label">Demands</label>
+    <select id="theDemands" class="form-control">
+      <option id="High Help">High Help</option>
+      <option id="Medium Help">Medium Help</option>
+      <option id="Low Help">Low Help</option>
+      <option id="None">None</option>
+      <option id="Low Hindrance">Low Hindrance</option>
+      <option id="Medium Hindrance">Medium Hindrance</option>
+      <option id="High Hindrance">High Hindrance</option>
+    </select>
+    <label for="theGoalConflict" class="control-label">Goal Conflict</label>
+    <select id="theGoalConflict" class="form-control">
+      <option id="High Help">High Help</option>
+      <option id="Medium Help">Medium Help</option>
+      <option id="Low Help">Low Help</option>
+      <option id="None">None</option>
+      <option id="Low Hindrance">Low Hindrance</option>
+      <option id="Medium Hindrance">Medium Hindrance</option>
+      <option id="High Hindrance">High Hindrance</option>
+    </select>
+    </div>
+  </div>
+
+  <div id="typeOfFile" title="Which type?" class="form-group" style="display: none">
+    <select name="theImportModelType" id="theImportModelType" class="form-control">
+      <option>Model</option>
+      <option>Project data</option>
+      <option>Requirements</option>
+      <option>Risk Analysis</option>
+      <option>Usability</option>
+      <option>Misusability</option>
+      <option>Associations</option>
+      <option>Threat and Vulnerability Types</option>
+      <option>Domain Values</option>
+      <option>Threat and Vulnerability Directory</option>
+      <option>Security Pattern</option>
+      <option>Architectural Pattern</option>
+      <option>Attack Pattern</option>
+      <option>Synopses</option>
+      <option>Assets</option>
+      <option>Processes</option>
+    </select>
+    <input class="form-control" type="file" accept="text/xml" onchange="readImportFile(event)" id="theImportModelFile" name="theImportModelFile" />
   </div>
   <div class="modal fade" id="chooseSecurityProperty" tabindex="-1" role="dialog" aria-labelledby="cSP_label" data-updatepropertylist="" data-buildproperty="" data-currentproperty="">
     <div class="modal-dialog" role="document">
@@ -853,141 +945,7 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="toTrelloModal" tabindex="-1" role="dialog" aria-labelledby="tml" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Export to Trello</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="control-label" for="theBoard">Board</label>
-          <input type="text" class="form-control" id="theToBoard" name="theToBoard">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="ExportReferences">Export</button>
-      </div>
-    </div>
-  </div>
-  </div>
-  <div class="modal fade" id="fromTrelloModal" tabindex="-1" role="dialog" aria-labelledby="tml" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Export to CAIRIS</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="control-label" for="theFromBoards">Board</label>
-          <select class="form-control" name="theFromBoards" id="theFromBoards"></select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="ExportLists">Export</button>
-      </div>
-    </div>
-  </div>
-  </div>
 
-  <div class="modal fade" id="chooseResponseDialog" tabindex="-1" role="dialog" aria-labelledby="crrd_label">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Choose Response</h4>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="theResponse" class="control-label">Response</label>
-          <select class="optionsInput form-control" name="theResponse" id="theResponse" style="width: 100%;">
-            <option id="Accept">Accept</option>
-            <option id="Transfer">Transfer</option>
-            <option id="Mitigate">Mitigate</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <div class="form-group col-md-2 col-md-offset-5">
-          <button type="button" id="SelectResponseButton" class="btn btn-primary">Add</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-
-  <div class="modal fade" id="weaknessAnalysisDialog" tabindex="-1" role="dialog" aria-labelledby="wad_label">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="wadTitle">Weakness Analysis</h4>
-        </div>
-        <div class="modal-body">
-          <div class="container">
-            <ul class="nav nav-tabs" id="theWeaknessAnalysisList" style="width: 45%;">
-              <li class="active"><a data-target="#threats" data-toggle="tab">Threats</a></li>
-              <li><a data-target="#vulnerabilities" data-toggle="tab">Vulnerabilities</a></li>
-              <li><a data-target="#personaimpact" data-toggle="tab">Persona Impact</a></li>
-              <li><a data-target="#obstacles" data-toggle="tab">Obstacles</a></li>
-            </ul>
-            <div class="tab-content">
-              <div id="threats" class="tab-pane active">
-                <table class="table table-responsive" id="theWeaknessAnalysisThreats" style="width:45%;">
-                  <thead>
-                    <tr><th>Target</th><th>Components</th><th>Asset</th></tr>
-                  </thead>
-                  <tbody>
-                  </tbody>
-                </table>
-              </div>
-              <div id="vulnerabilities" class="tab-pane">
-                <table class="table table-responsive" id="theWeaknessAnalysisVulnerabilities" style="width: 45%;">
-                  <thead>
-                    <tr><th>Target</th><th>Components</th><th>Asset</th></tr>
-                  </thead>
-                  <tbody>
-                  </tbody>
-                </table>
-              </div>
-              <div id="personaimpact" class="tab-pane">
-                <table class="table table-responsive" id="theWeaknessAnalysisPersonaImpact" style="width: 45%;">
-                  <thead>
-                    <tr><th>Persona</th><th>Impact</th></tr>
-                  </thead>
-                  <tbody>
-                  </tbody>
-                </table>
-              </div>
-              <div id="obstacles" class="tab-pane">
-                <table class="table table-responsive" id="theWeaknessAnalysisObstacles" style="width: 45%;">
-                  <thead>
-                    <tr><th>Obstacle</th><th>Mitigating Goal</th></tr>
-                  </thead>
-                  <tbody>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <div class="form-group col-md-2 col-md-offset-5">
-            <button type="button" id="situateArchitecturalPatternButton" class="btn btn-primary">Situate</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="loadingWrapper">
     <div class="divLoading">
@@ -1013,7 +971,7 @@
     LazyLoad.js(["dist/js/cairis/Cairis-UI.js","dist/js/cairis/buttonclicks.js", "dist/js/cairis/Cairis.js", "dist/js/cairis/readFile.js",
         "dist/js/cairis/threats.js", "dist/js/cairis/attackers.js", "dist/js/cairis/personas.js", "dist/js/cairis/assets.js", "dist/js/cairis/templateassets.js","dist/js/cairis/templaterequirements.js","dist/js/cairis/templategoals.js","dist/js/cairis/goals.js", "dist/js/cairis/projectSettings.js", "dist/js/cairis/tasks.js", "dist/js/cairis/domainproperties.js", "dist/js/cairis/obstacles.js", "dist/js/cairis/countermeasures.js", "dist/js/cairis/usecases.js","dist/js/cairis/vulnerabilities.js","dist/js/cairis/architecturalpatterns.js","dist/js/cairis/requirements.js",
         "dist/js/cairis/risks.js", "dist/js/cairis/fileImport.js", "dist/js/cairis/fileExport.js", "dist/js/cairis/responses.js","dist/js/cairis/dependencies.js","dist/js/cairis/genDoc.js","dist/js/cairis/findobjt.js","dist/js/cairis/externaldocuments.js","dist/js/cairis/documentreferences.js","dist/js/cairis/personacharacteristics.js","dist/js/cairis/taskcharacteristics.js","dist/js/cairis/homeSettings.js","dist/js/cairis/roles.js","dist/js/cairis/environments.js","dist/js/cairis/valuetypes.js","dist/js/cairis/locations.js","dist/js/cairis/traceability.js","dist/js/cairis/chernoff.js","dist/js/cairis/conceptreferences.js",
-        "dist/js/cairis/SVGhandler.js","dist/js/objects/jsonDefaultObjects.js","dist/js/cairis/assetassociations.js","dist/js/cairis/trello.js"], function () {
+        "dist/js/cairis/SVGhandler.js","dist/js/objects/jsonDefaultObjects.js","dist/js/cairis/assetassociations.js"], function () {
 
       console.log("All Cairis JS loaded");
     });

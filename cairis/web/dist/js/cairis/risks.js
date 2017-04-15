@@ -487,7 +487,7 @@ $(document).on('click', 'td.deleteRiskButton', function (e) {
   });
 });
 
-function putRisk(risk, oldName, callback){
+function putRisk(risk, oldName, usePopup, callback){
   var output = {};
   output.object = risk;
   output.session_id = $.session.get('sessionID');
@@ -505,14 +505,18 @@ function putRisk(risk, oldName, callback){
     data: output,
     url: serverIP + "/api/risks/name/" + oldName.replace(" ","%20") + "?session_id=" + $.session.get('sessionID'),
     success: function (data) {
-      showPopup(true);
+      if(usePopup) {
+        showPopup(true);
+      }
       if(jQuery.isFunction(callback)){
         callback();
       }
     },
     error: function (xhr, textStatus, errorThrown) {
-      var error = JSON.parse(xhr.responseText);
-      showPopup(false, String(error.message));
+      if(usePopup) {
+        var error = JSON.parse(xhr.responseText);
+        showPopup(false, String(error.message));
+      }
       debugLogger(String(this.url));
       debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
     }

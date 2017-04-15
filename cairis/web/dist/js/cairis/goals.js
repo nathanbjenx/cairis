@@ -20,11 +20,11 @@
 'use strict';
 
 $("#goalsClick").click(function(){
-  createEditGoalsTable();
+  createEditGoalsTable()
 });
 
 $("#goalMenuClick").click(function(){
-  createEditGoalsTable();
+  createEditGoalsTable()
 });
 
 function createEditGoalsTable(){
@@ -202,33 +202,23 @@ mainContent.on('click',".deleteGoalSubGoal", function () {
 });
 
 mainContent.on('click',"#addConcerntoGoal", function () {
-  var filterList = [];
+  hasAsset = [];
   $("#editgoalsConcernTable").find('tbody').find('.GoalConcernName').each(function (index, td) {
-     filterList.push($(td).text());
+     hasAsset.push($(td).text());
   });
-
   var envName = $.session.get("GoalEnvName");
+  assetsInEnvDialogBox(envName, hasAsset, function (text) {
+    var goal = JSON.parse($.session.get("Goal"));
 
-  refreshDimensionSelector($('#chooseEnvironmentSelect'),'asset',envName,function(){
-    $('#chooseEnvironment').attr('data-chooseDimension','concern');
-    $('#chooseEnvironment').attr('data-applyEnvironmentSelection','addGoalConcern');
-    $('#chooseEnvironment').modal('show');
-  },filterList);
+    $.each(goal.theEnvironmentProperties, function (index, env) {
+      if(env.theEnvironmentName == envName){
+        env.theConcerns.push(text);
+      }
+    });
+    appendGoalConcern(text);
+    $.session.set("Goal", JSON.stringify(goal));
+  });
 });
-
-function addGoalConcern() {
-  var text = $("#chooseEnvironmentSelect").val();
-  var goal = JSON.parse($.session.get("Goal"));
-  var envName = $.session.get("GoalEnvName");
-
-  $.each(goal.theEnvironmentProperties, function (index, env) {
-    if(env.theEnvironmentName == envName){
-      env.theConcerns.push(text);
-      appendGoalConcern(text);
-      $.session.set("Goal", JSON.stringify(goal));
-    }
-  });
-};
 
 mainContent.on('click',".deleteGoalGoal", function () {
   var goal = JSON.parse($.session.get("Goal"));
@@ -300,29 +290,21 @@ mainContent.on('click', '#addGoaltoGoal', function () {
 });
 
 mainContent.on("click", "#addGoalEnvironment", function () {
-  var filterList = [];
+  var hasEnv = [];
   $(".goalEnvProperties").each(function (index, tag) {
-    filterList.push($(tag).text());
+    hasEnv.push($(tag).text());
   });
-
-  refreshDimensionSelector($('#chooseEnvironmentSelect'),'environment',undefined,function(){
-    $('#chooseEnvironment').attr('data-chooseDimension','environment');
-    $('#chooseEnvironment').attr('data-applyEnvironmentSelection','addGoalEnvironment');
-    $('#chooseEnvironment').modal('show');
-  },filterList);
+  environmentDialogBox(hasEnv, function (text) {
+    appendGoalEnvironment(text);
+    var environment =  jQuery.extend(true, {},goalEnvDefault );
+    environment.theEnvironmentName = text;
+    var goal = JSON.parse($.session.get("Goal"));
+    goal.theEnvironmentProperties.push(environment);
+    $("#goalProperties").show("fast");
+    $.session.set("GoalEnvName", text);
+    $.session.set("Goal", JSON.stringify(goal));
+  });
 });
-
-function addGoalEnvironment() {
-  var text = $("#chooseEnvironmentSelect").val();
-  appendGoalEnvironment(text);
-  var environment =  jQuery.extend(true, {},goalEnvDefault );
-  environment.theEnvironmentName = text;
-  var goal = JSON.parse($.session.get("Goal"));
-  goal.theEnvironmentProperties.push(environment);
-  $("#goalProperties").show("fast");
-  $.session.set("GoalEnvName", text);
-  $.session.set("Goal", JSON.stringify(goal));
-};
 
 mainContent.on('click', ".deleteGoalEnv", function () {
   var envi = $(this).next(".goalEnvProperties").text();
@@ -407,6 +389,7 @@ mainContent.on('change', ".goalAutoUpdater" ,function() {
 
 $(document).on('click', '#addNewGoal', function () {
   fillGoalOptionMenu(null, function () {
+    $("#editGoalOptionsForm").validator();
     $("#updateGoalButton").text("Create");
     $("#editGoalOptionsForm").addClass('new');
     $("#goalProperties").hide();
@@ -505,9 +488,8 @@ mainContent.on('dblclick', '.editGoalConcernAssoc', function () {
   });
 });
 
-mainContent.on('click', '#goalCancelButton', function (e) {
-  e.preventDefault();
-  toggleGoalWindow("#editGoalOptionsForm");
+mainContent.on('click', '.goalCancelButton', function () {
+  toggleGoalWindow("#editGoalOptionsForm")
 });
 
 mainContent.on('click',"#updateGoalGoal", function () {
@@ -597,11 +579,47 @@ function fillGoalOptionMenu(data,callback){
 }
 
 function fillGoalEditSubGoal(theSettableValue){
-  refreshDimensionSelector($('#theSubGoalName'),'goal',$.session.get("GoalEnvName"),undefined,['All']);
+  $("#theSubGoalName").empty();
+  var subname = $("#theSubGoalName");
+  getAllgoals(function (data) {
+    $.each(data, function (key, goal) {
+      subname.append($("<option></option>")
+        .attr("value", key)
+        .text(key));
+    });
+  });
+  getAllRequirements(function (data) {
+    $.each(data, function (key, req) {
+      subname.append($("<option></option>")
+        .attr("value", req.theLabel)
+        .text(req.theLabel));
+    });
+    if (typeof theSettableValue  !== "undefined"){
+      subname.val(theSettableValue);
+    }
+  });
 }
 
 function fillGoalEditGoal(theSettableValue) {
-  refreshDimensionSelector($('#theGoalName'),'goal',$.session.get("GoalEnvName"),undefined,['All']); 
+  var thegoalName = $("#theGoalName");
+  thegoalName.empty();
+  getAllgoals(function (data) {
+    $.each(data, function (key, goal) {
+      thegoalName.append($("<option></option>")
+        .attr("value", key)
+        .text(key));
+    });
+  });
+  getAllRequirements(function (data) {
+    $.each(data, function (key, req) {
+      thegoalName.append($("<option></option>")
+        .attr("value", req.theLabel)
+        .text(req.theLabel));
+    });
+    if (typeof theSettableValue  !== "undefined"){
+      thegoalName.val(theSettableValue);
+    }
+  });
 }
 
 function toggleGoalWindow(window) {
@@ -752,11 +770,3 @@ function postGoal(goal, callback){
     }
   });
 }
-
-mainContent.on('click', '#theGoalType', function () {
-  refreshDimensionSelector($('#theGoalName'),$('#theGoalType').val(),$.session.get("GoalEnvName"),undefined,['All']);
-});
-
-mainContent.on('click', '#theSubgoalType', function () {
-  refreshDimensionSelector($('#theSubGoalName'),$('#theSubgoalType').val(),$.session.get("GoalEnvName"),undefined,['All']);
-});

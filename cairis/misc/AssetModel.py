@@ -18,17 +18,15 @@
 
 from cairis.core.Borg import Borg
 import pydot
-from cairis.core.colourcodes import surfaceTypeColourCode,surfaceTypeTextColourCode
 import os
 
 __author__ = 'Shamal Faily, Robin Quetin'
 
 class AssetModel:
-  def __init__(self,associations,envName = '',assetName = '',hideConcerns = False, graphName='asset.dot', db_proxy=None, fontName=None, fontSize=None,isComponentAssetModel=False):
+  def __init__(self,associations,envName = '',assetName = '',hideConcerns = False, graphName='asset.dot', db_proxy=None, fontName=None, fontSize=None):
     self.theAssociations = associations
     self.theEnvironmentName = envName
     self.theAssetName = assetName
-    self.isComponentAssetModel = isComponentAssetModel
     b = Borg()
     self.dbProxy = db_proxy
     self.fontName = fontName
@@ -68,16 +66,7 @@ class AssetModel:
       borderColour = 'black'
       if (dimName == 'asset' and assetObjt.critical()):
         borderColour = 'red'
-      if (dimName == 'template_asset' and self.isComponentAssetModel):
-        stScore = self.dbProxy.templateAssetMetrics(objtName)
-        assetNode = pydot.Node(objtName,shape='record',style='filled',fillcolor=surfaceTypeColourCode(stScore),fontcolor=surfaceTypeTextColourCode(stScore),fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl)
-
-
-
-
-
-      else:
-        assetNode = pydot.Node(objtName,shape='record',color=borderColour,fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl)
+      assetNode = pydot.Node(objtName,shape='record',color=borderColour,fontname=self.fontName,fontsize=self.fontSize,URL=objtUrl)
       self.theGraph.add_node(assetNode)
     self.nodeList.add(objtName)
 

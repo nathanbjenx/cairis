@@ -180,9 +180,11 @@ function fillTaskEnvInfo(env) {
     appendTaskPersona(env.thePersonas[i]['thePersona'],window.reverseDurationLookup[env.thePersonas[i]['theDuration']],window.reverseFrequencyLookup[env.thePersonas[i]['theFrequency']],env.thePersonas[i]['theDemands'],env.thePersonas[i]['theGoalConflict']);
   }
 
-  $.each(env.theConcernAssociations, function(idx,concAssoc) {
-    appendTaskConcernAssociation(concAssoc);
-  });
+  for (var i = 0; i < env.theConcernAssociations.length; i++) {
+    var aCol = [];
+    $.each(env.theConcernAssociations[i], function(idx,val) { aCol.push(val); });
+    appendConcernAssociation(aCol[0]);
+  }
 }
 
 
@@ -233,32 +235,22 @@ function appendTaskConcern(concern) {
 }
 
 mainContent.on('click', '#addConcernToTask', function () {
-  var filterList = [];
+  var hasConcern = [];
   $("#theConcerns").find(".taskConcern").each(function(index, concern){
-    filterList.push($(concern).text());
+    hasConcern.push($(concern).text());
   });
-
-  var envName = $.session.get("taskEnvironmentName");
-
-  refreshDimensionSelector($('#chooseEnvironmentSelect'),'asset',envName,function(){
-    $('#chooseEnvironment').attr('data-chooseDimension','concern');
-    $('#chooseEnvironment').attr('data-applyEnvironmentSelection','addTaskConcern');
-    $('#chooseEnvironment').modal('show');
-  },filterList);
+  assetsDialogBox(hasConcern, function (text) {
+    var task = JSON.parse($.session.get("Task"));
+    var theEnvName = $.session.get("taskEnvironmentName");
+    $.each(task.theEnvironmentProperties, function (index, env) {
+      if(env.theEnvironmentName == theEnvName){
+        env.theAssets.push(text);
+        $.session.set("Task", JSON.stringify(task));
+        appendTaskConcern(text);
+      }
+    });
+  });
 });
-
-function addTaskConcern() {
-  var text = $("#chooseEnvironmentSelect").val();
-  var task = JSON.parse($.session.get("Task"));
-  var theEnvName = $.session.get("taskEnvironmentName");
-  $.each(task.theEnvironmentProperties, function (index, env) {
-    if(env.theEnvironmentName == theEnvName){
-      env.theAssets.push(text);
-      $.session.set("Task", JSON.stringify(task));
-      appendTaskConcern(text);
-    }
-  });
-};
 
 mainContent.on('click', ".removeTaskConcern", function () {
   var text = $(this).next(".taskConcern").text();
@@ -283,92 +275,26 @@ function appendTaskPersona(persona,duration,frequency,demands,goalConflict) {
 }
 
 mainContent.on('click', '#addPersonaToTask', function () {
-  var filterList = [];
+  var hasPersona = [];
   $("#thePersonas").find(".taskPersona").each(function(index, persona){
-    filterList.push($(persona).text());
+    hasPersona.push($(persona).text());
   });
-  var envName = $.session.get("taskEnvironmentName");
-
-  refreshDimensionSelector($('#theTaskPersona'),'persona',envName,function(){
-    $('#taskParticipantsDialog').attr('data-selectedIndex',undefined);
-    $('#taskParticipantsDialog').modal('show');
-  },filterList);
-});
-
-mainContent.on('click','.taskPersona',function() {
-  var tpRow = $(this).closest('tr');
-  var pName = tpRow.find('td:eq(1)').text();
-
-  var filterList = [];
-  $("#thePersonas").find(".taskPersona").each(function(index, persona){
-    if ($(persona).text() != pName) {
-      filterList.push($(persona).text());
-    }
-  });
-  var envName = $.session.get("taskEnvironmentName");
-
-  refreshDimensionSelector($('#theTaskPersona'),'persona',envName,function(){
-    $('#taskParticipantsDialog').attr('data-selectedIndex',tpRow.index());
-    $('#taskParticipantsDialog').modal('show');
-  },filterList);
-});
-
-mainContent.on('shown.bs.modal','#taskParticipantsDialog',function() {
-  var selectedIdx = $('#taskParticipantsDialog').attr('data-selectedIndex');
-  if (selectedIdx != undefined) {
-    $('#AddTaskParticipantButton').text('Edit');
+  taskPersonaDialogBox(hasPersona, function (persona,duration,frequency,demands,goalConflict) {
     var task = JSON.parse($.session.get("Task"));
     var theEnvName = $.session.get("taskEnvironmentName");
     $.each(task.theEnvironmentProperties, function (index, env) {
       if(env.theEnvironmentName == theEnvName){
-        var ptc = env.thePersonas[selectedIdx];
-        $('#theTaskPersona').val(ptc.thePersona);
-        $('#theTaskDuration').val(ptc.theDuration);
-        $('#theTaskFrequency').val(ptc.theFrequency);
-        $('#theTaskDemands').val(ptc.theDemands);
-        $('#theTaskGoalConflict').val(ptc.theGoalConflict);
-      }
-    });
-  }
-  else {
-    $('#AddTaskParticipantButton').text('Add');
-    $('#theTaskPersona').val('');
-    $('#theTaskDuration').val('Low');
-    $('#theTaskFrequency').val('Low');
-    $('#theTaskDemands').val('Low');
-    $('#theTaskGoalConflict').val('Low');
-  }
-});
-
-mainContent.on('click', '#AddTaskParticipantButton', function () {
-  var ptc = {};
-  ptc['thePersona'] = $('#theTaskPersona').val();
-  ptc['theDuration'] = $('#theTaskDuration').val();
-  ptc['theFrequency'] = $('#theTaskFrequency').val();
-  ptc['theDemands'] = $('#theTaskDemands').val();
-  ptc['theGoalConflict'] = $('#theTaskGoalConflict').val();
-
-  var task = JSON.parse($.session.get("Task"));
-  var theEnvName = $.session.get("taskEnvironmentName");
-  $.each(task.theEnvironmentProperties, function (index, env) {
-    if(env.theEnvironmentName == theEnvName){
-      var selectedIdx = $('#taskParticipantsDialog').attr('data-selectedIndex');
-      if (selectedIdx != undefined) {
-        env.thePersonas[selectedIdx] = ptc;
-        $.session.set("Task", JSON.stringify(task));
-        $('#thePersonas').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(1)").text(ptc.thePersona);
-        $('#thePersonas').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(2)").text(window.reverseDurationLookup[ptc.theDuration]);
-        $('#thePersonas').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(3)").text(window.reverseFrequencyLookup[ptc.theFrequency]);
-        $('#thePersonas').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(4)").text(ptc.theDemands);
-        $('#thePersonas').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(5)").text(ptc.theGoalConflict);
-      }
-      else {
+        var ptc = {};
+        ptc['thePersona'] = persona;
+        ptc['theDuration'] = window.durationLookup[duration];
+        ptc['theFrequency'] = window.frequencyLookup[frequency];
+        ptc['theDemands'] = demands;
+        ptc['theGoalConflict'] = goalConflict;
         env.thePersonas.push(ptc);
         $.session.set("Task", JSON.stringify(task));
-        appendTaskPersona(ptc.thePersona,window.reverseDurationLookup[ptc.theDuration],window.reverseFrequencyLookup[ptc.theFrequency],ptc.theDemands,ptc.theGoalConflict);
+        appendTaskPersona(persona,duration,frequency,demands,goalConflict);
       }
-      $('#taskParticipantsDialog').modal('hide');
-    }
+    });
   });
 });
 
@@ -392,8 +318,8 @@ mainContent.on('click', ".removeTaskPersona", function () {
   });
 });
 
-function appendTaskConcernAssociation(assoc) {
-  $("#theConcernAssociations").find("tbody").append("<tr><td class='removeConcernAssociation'><i class='fa fa-minus'></i></td><td class='concernAssociation'>" +  assoc.theSource + "</td><td>" + assoc.theSourceNry + "</td><td>" + assoc.theLinkVerb + "</td><td>" + assoc.theTargetNry + "</td><td>" + assoc.theTarget + "</td></tr>").animate('slow'); 
+function appendConcernAssociation(assoc) {
+  $("#theConcernAssociations").find("tbody").append("<tr><td class='removeConcernAssociation'><i class='fa fa-minus'></i></td><td class='concernAssociation'>" +  assoc[0] + "</td><td>" + assoc[1] + "</td><td>" + assoc[2] + "</td><td>" + assoc[3] + "</td><td>" + assoc[4] + "</td></tr>").animate('slow'); 
 }
 
 
@@ -421,34 +347,25 @@ mainContent.on('click', ".deleteTaskEnv", function () {
 });
 
 mainContent.on("click", "#addTaskEnv", function () {
-  var filterList = [];
+  var hasEnv = [];
   $(".taskEnvironment").each(function (index, tag) {
-    filterList.push($(tag).text());
+    hasEnv.push($(tag).text());
   });
-
-  refreshDimensionSelector($('#chooseEnvironmentSelect'),'environment',$.session.get('countermeasureEnvironmentName'),function(){
-    $('#chooseEnvironment').attr('data-chooseDimension','environment');
-    $('#chooseEnvironment').attr('data-applyEnvironmentSelection','addTaskEnvironment');
-    $('#chooseEnvironment').modal('show');
-  },filterList);
+  environmentDialogBox(hasEnv, function (text) {
+    appendTaskEnvironment(text);
+    var environment =  jQuery.extend(true, {},taskEnvDefault );
+    environment.theEnvironmentName = text;
+    var task = JSON.parse($.session.get("Task"));
+    task.theEnvironmentProperties.push(environment);
+    $.session.set("Task", JSON.stringify(task));
+    $(document).find(".taskEnvironment").each(function () {
+      if($(this).text() == text){
+        $(this).trigger("click");
+        $("#tasktabsID").show("fast");
+      }
+    });
+  });
 });
-
-function addTaskEnvironment() {
-  var text = $("#chooseEnvironmentSelect").val();
-  appendTaskEnvironment(text);
-  var environment =  jQuery.extend(true, {},taskEnvDefault );
-  environment.theEnvironmentName = text;
-  var task = JSON.parse($.session.get("Task"));
-  task.theEnvironmentProperties.push(environment);
-  $.session.set("Task", JSON.stringify(task));
-  $(document).find(".taskEnvironment").each(function () {
-    if($(this).text() == text){
-      $(this).trigger("click");
-      $("#tasktabsID").show("fast");
-      $('#chooseEnvironment').modal('hide');
-    }
-  });
-};
 
 mainContent.on('click', '#UpdateTask', function (e) {
   e.preventDefault();
@@ -537,7 +454,66 @@ mainContent.on('click', '#CloseTask', function (e) {
   createTasksTable();
 });
 
-function putTask(task, oldName, callback){
+function taskPersonaDialogBox(hasPersona ,callback){
+  var dialogwindow = $("#ChoosePersonaForTask");
+  var envName = $.session.get("taskEnvironmentName");
+  $.ajax({
+    type: "GET",
+    dataType: "json",
+    accept: "application/json",
+    data: {
+      session_id: String($.session.get('sessionID'))
+    },
+    crossDomain: true,
+    url: serverIP + "/api/dimensions/table/persona/environment/" + envName,
+    success: function (data) {
+      $("#theTaskPersona").empty();
+      var none = true;
+      $.each(data, function(key, persona) {
+        var found = false;
+        $.each(hasPersona,function(index, text) {
+          if(text == persona){
+            found = true
+          }
+        });
+        //if not found in personas
+        if(!found) {
+          $("#theTaskPersona").append("<option value=" + persona + ">" + persona + "</option>");
+          none = false;
+        }
+      });
+      if(!none) {
+        //dialogwindow.show();
+        dialogwindow.dialog({
+          modal: true,
+          buttons: {
+            Ok: function () {
+              var persona = $("#theTaskPersona").find("option:selected" ).text();
+              var duration = $("#theTaskDuration").find("option:selected").text();
+              var frequency = $("#theTaskFrequency").find("option:selected").text();
+              var demands = $("#theTaskDemands").find("option:selected").text();
+              var goalConflict = $("#theTaskGoalConflict").find("option:selected").text();
+              if(jQuery.isFunction(callback)){
+                callback(persona, duration, frequency, demands, goalConflict);
+              }
+              $(this).dialog("close");
+            }
+          }
+        });
+        $(".comboboxD").css("visibility", "visible");
+      }  
+      else {
+        alert("All possible personas are already added");
+      }
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      debugLogger(String(this.url));
+      debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
+    }
+  });
+}
+
+function putTask(task, oldName, usePopup, callback){
   var output = {};
   output.object = task;
   output.session_id = $.session.get('sessionID');
@@ -555,14 +531,18 @@ function putTask(task, oldName, callback){
     data: output,
     url: serverIP + "/api/tasks/name/" + oldName.replace(" ","%20") + "?session_id=" + $.session.get('sessionID'),
     success: function (data) {
-      showPopup(true);
+      if(usePopup) {
+        showPopup(true);
+      }
       if(jQuery.isFunction(callback)){
         callback();
       }
     },
     error: function (xhr, textStatus, errorThrown) {
-      var error = JSON.parse(xhr.responseText);
-      showPopup(false, String(error.message));
+      if(usePopup) {
+        var error = JSON.parse(xhr.responseText);
+        showPopup(false, String(error.message));
+      }
       debugLogger(String(this.url));
       debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
     }
@@ -600,91 +580,3 @@ function postTask(task, callback){
     }
   });
 }
-
-mainContent.on('click', '#addConcernAssociationToTask', function () {
-  $('#AddTaskConcernAssociationButton').text('Add');
-  $('#taskConcernAssociationsDialog').attr('data-selectedIndex',undefined);
-  refreshConcernSelectors();
-  $('#taskConcernAssociationsDialog').modal('show');
-});
-
-mainContent.on('click', '.concernAssociation', function () {
-  var caRow = $(this).closest("tr");
-  $('#AddTaskConcernAssociationButton').text('Edit');
-  $('#taskConcernAssociationsDialog').attr('data-selectedIndex',caRow.index());
-  refreshConcernSelectors();
-  $('#taskConcernAssociationsDialog').modal('show');
-});
-
-function refreshConcernSelectors() {
-  $("#theTaskConcernSource").empty();
-  $("#theTaskConcernTarget").empty();
-  var task = JSON.parse($.session.get("Task"));
-  var envName = $.session.get("taskEnvironmentName");
-  $.each(task.theEnvironmentProperties, function (index, env) {
-    if(env.theEnvironmentName == envName){
-      $.each(env.theAssets, function (idx2, conc) {
-        $("#theTaskConcernSource").append($("<option></option>").attr('value',conc).text(conc));
-        $("#theTaskConcernTarget").append($("<option></option>").attr('value',conc).text(conc));
-      });
-    }
-  });
-}
-
-mainContent.on('shown.bs.modal','#taskConcernAssociationsDialog',function() {
-  var selectedIdx = $('#taskConcernAssociationsDialog').attr('data-selectedIndex');
-  if (selectedIdx != undefined) {
-    var task = JSON.parse($.session.get("Task"));
-    var envName = $.session.get("taskEnvironmentName");
-    $.each(task.theEnvironmentProperties, function (index, env) {
-      if(env.theEnvironmentName == envName){
-        var concAssoc = env.theConcernAssociations[selectedIdx];
-        $('#theTaskConcernSource').val(concAssoc.theSource);
-        $('#theTaskConcernSourceNry').val(concAssoc.theSourceNry);
-        $('#theTaskConcernLinkVerb').val(concAssoc.theLinkVerb);
-        $('#theTaskConcernTargetNry').val(concAssoc.theTargetNry);
-        $('#theTaskConcernTarget').val(concAssoc.theTarget);
-      }
-    });
-  }
-  else {
-    $('#theTaskConcernSource').val('');
-    $('#theTaskConcernSourceNry').val('1');
-    $('#theTaskConcernLinkVerb').val('');
-    $('#theTaskConcernTargetNry').val('1');
-    $('#theTaskConcernTarget').val('');
-  }
-});
-
-mainContent.on('click', '#AddTaskConcernAssociationButton', function () {
-  var concAssoc = {};
-  concAssoc.theSource = $('#theTaskConcernSource').val();
-  concAssoc.theSourceNry = $('#theTaskConcernSourceNry').val();
-  concAssoc.theLinkVerb = $('#theTaskConcernLinkVerb').val();
-  concAssoc.theTargetNry = $('#theTaskConcernTargetNry').val();
-  concAssoc.theTarget = $('#theTaskConcernTarget').val();
-
-  var task = JSON.parse($.session.get("Task"));
-  var envName = $.session.get("taskEnvironmentName");
-  $.each(task.theEnvironmentProperties, function (index, env) {
-    if(env.theEnvironmentName == envName){
-      var selectedIdx = $('#taskConcernAssociationsDialog').attr('data-selectedIndex');
-      if (selectedIdx != undefined) {
-        env.theConcernAssociations[selectedIdx] = concAssoc;
-        $.session.set("Task", JSON.stringify(task));
-        $('#theConcernAssociations').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(1)").text(concAssoc.theSource);
-        $('#theConcernAssociations').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(2)").text(concAssoc.theSourceNry);
-        $('#theConcernAssociations').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(3)").text(concAssoc.theLinkVerb);
-        $('#theConcernAssociations').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(4)").text(concAssoc.theTargetNry);
-        $('#theConcernAssociations').find('tbody').find('tr:eq(' + selectedIdx + ')').find("td:eq(5)").text(concAssoc.theTarget);
-      }
-      else {
-        env.theConcernAssociations.push(concAssoc);
-        $.session.set("Task", JSON.stringify(task));
-        appendTaskConcernAssociation(concAssoc);
-      }
-      $('#taskConcernAssociationsDialog').modal('hide');
-    }
-  });
-
-});

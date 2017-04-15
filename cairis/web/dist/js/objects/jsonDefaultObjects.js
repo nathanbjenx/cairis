@@ -273,13 +273,13 @@ var personaDefault = {
 
 var goalEnvDefault = { 
   "__python_obj__": "GoalEnvironmentProperties.GoalEnvironmentProperties",
-  "theFitCriterion": "None",
+  "theFitCriterion": "",
   "theConcerns": [],
   "theSubGoalRefinements": [],
-  "thePriority": "Low",
+  "thePriority": "",
   "theEnvironmentName": "",
-  "theCategory": "Maintain",
-  "theDefinition": "None",
+  "theCategory": "",
+  "theDefinition": "",
   "theConcernAssociations": [],
   "theGoalRefinements": [],
   "theLabel": "",
@@ -298,8 +298,8 @@ var goalDefault = {
 var obstacleEnvDefault =     {
   "__python_obj__": "ObstacleEnvironmentProperties.ObstacleEnvironmentProperties",
   "theLabel": "",
-  "theDefinition": "None",
-  "theCategory": "Vulnerability",
+  "theDefinition": "",
+  "theCategory": "",
   "theGoalRefinements": [],
   "theSubGoalRefinements": [],
   "theConcerns": [],

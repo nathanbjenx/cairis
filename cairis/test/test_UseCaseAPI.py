@@ -20,12 +20,11 @@ import logging
 from urllib import quote
 import jsonpickle
 from cairis.core.UseCase import UseCase
-from cairis.core.Trace import Trace
 from cairis.core.UseCaseEnvironmentProperties import UseCaseEnvironmentProperties
 from cairis.test.CairisDaemonTestCase import CairisDaemonTestCase
 import os
 from cairis.mio.ModelImport import importModelFile, importUsabilityFile
-from cairis.tools.PseudoClasses import StepsAttributes, StepAttributes,ExceptionAttributes
+from cairis.tools.PseudoClasses import StepsAttributes, StepAttributes
 
 __author__ = 'Shamal Faily'
 
@@ -35,7 +34,7 @@ class UseCaseAPITests(CairisDaemonTestCase):
   @classmethod
   def setUpClass(cls):
     importModelFile(os.environ['CAIRIS_SRC'] + '/../examples/exemplars/NeuroGrid/NeuroGrid.xml',1,'test')
-    importUsabilityFile(os.environ['CAIRIS_SRC'] + '/test/testusecase.xml','test')
+    importModelFile(os.environ['CAIRIS_SRC'] + '/test/testusecase.xml',0,'test')
   
   def setUp(self):
     # region Class fields
@@ -48,9 +47,8 @@ class UseCaseAPITests(CairisDaemonTestCase):
     self.existing_actors = ['Researcher']
     self.existing_precond = 'Test preconditions'
     self.existing_steps = []
-    anException = ExceptionAttributes('anException','requirement','Anonymisation guidelines','Confidentiality Threat','anException description')
-    self.existing_steps.append(StepAttributes('Researcher does something','','','',[],[anException]))
-    self.existing_steps.append(StepAttributes('System does something','','','',[],[]))
+    self.existing_steps.append(StepAttributes('Researcher does something','','','',[]))
+    self.existing_steps.append(StepAttributes('System does something','','','',[]))
     self.existing_postcond = 'Test postconditions'
     usecase_class = UseCase.__module__+'.'+UseCase.__name__
     # endregion
@@ -75,47 +73,6 @@ class UseCaseAPITests(CairisDaemonTestCase):
     usecase = jsonpickle.decode(rv.data)
     self.assertIsNotNone(usecase, 'No results after deserialization')
     self.logger.info('[%s] UseCase: %s [%d]\n', method, usecase['theName'], usecase['theId'])
-
-  def test_get_usecase_requirements(self):
-    new_tr = Trace(
-      fObjt = 'requirement',
-      fName = 'Dataset policy',
-      tObjt = 'usecase',
-      tName = 'Test use case')
-    new_tr_dict = {
-      'session_id' : 'test',
-      'object': new_tr
-    }
-    rv = self.app.post('/api/traces', content_type='application/json', data=jsonpickle.encode(new_tr_dict))
-
-    method = 'test_get_requirements_by_usecase_name'
-    url = '/api/usecases/name/%s/requirements?session_id=test' % quote(self.existing_usecase_name)
-    rv = self.app.get(url)
-    self.assertIsNotNone(rv.data, 'No response')
-    self.logger.debug('[%s] Response data: %s', method, rv.data)
-    reqs = jsonpickle.decode(rv.data)
-    self.assertIsNotNone(reqs, 'No results after deserialization')
-    self.assertEqual(new_tr.theFromName,reqs[0]);
-
-  def test_generate_obstacle_from_exception(self):
-    method = 'test_generate_obstacle_from_exception'
-    url = '/api/usecases/name/%s?session_id=test' % quote(self.existing_usecase_name)
-    rv = self.app.get(url)
-    uc = jsonpickle.decode(rv.data)
-    url = '/api/usecases/environment/Psychosis/step/' + quote('Researcher does something') + '/exception/anException/generate_obstacle?session_id=test' 
-    existing_uc_dict = {
-      'session_id': 'test',
-      'object': uc
-    }
-    rv = self.app.post(url, content_type='application/json', data=jsonpickle.encode(existing_uc_dict))
-    self.assertIsNotNone(rv.data, 'No response')
-    json_resp = jsonpickle.decode(rv.data)
-    self.assertIsNotNone(json_resp)
-    self.assertIsInstance(json_resp, dict)
-    message = json_resp.get('message', None)
-    self.assertIsNotNone(message, 'No message in response')
-    self.logger.info('[%s] Message: %s', method, message)
-    self.assertGreater(message.find('generated from exception'), -1, 'The obstacle was not generated')
 
   def test_delete(self):
     method = 'test_delete'

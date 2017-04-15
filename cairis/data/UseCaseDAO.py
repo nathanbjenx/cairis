@@ -29,8 +29,7 @@ from cairis.data.CairisDAO import CairisDAO
 from cairis.tools.JsonConverter import json_serialize, json_deserialize
 from cairis.tools.ModelDefinitions import UseCaseModel, UseCaseEnvironmentPropertiesModel
 from cairis.tools.SessionValidator import check_required_keys, get_fonts
-from cairis.tools.PseudoClasses import StepAttributes, StepsAttributes,ExceptionAttributes
-import cairis.core.ObstacleFactory
+from cairis.tools.PseudoClasses import StepAttributes, StepsAttributes 
 
 __author__ = 'Shamal Faily'
 
@@ -143,26 +142,6 @@ class UseCaseDAO(CairisDAO):
       self.close()
       raise ARMHTTPError(ex)
 
-  def get_usecase_requirements(self, name):
-    try:
-      return self.db_proxy.getUseCaseRequirements(name)
-    except DatabaseProxyException as ex:
-      self.close()
-      raise ARMHTTPError(ex)
-    except ARMException as ex:
-      self.close()
-      raise ARMHTTPError(ex)
-
-  def get_usecase_goals(self, goal_name,environment_name):
-    try:
-      return self.db_proxy.getUseCaseGoals(goal_name,environment_name)
-    except DatabaseProxyException as ex:
-      self.close()
-      raise ARMHTTPError(ex)
-    except ARMException as ex:
-      self.close()
-      raise ARMHTTPError(ex)
-    
   def check_existing_usecase(self, name):
     """
     :rtype: bool
@@ -225,11 +204,7 @@ class UseCaseDAO(CairisDAO):
           assert isinstance(real_prop, UseCaseEnvironmentProperties)
           s = []
           for step in real_prop.steps().theSteps:
-            excs = []
-            for excKey in step.exceptions():
-              exc = step.exception(excKey)
-              excs.append(ExceptionAttributes(exc[0],exc[1],exc[2],exc[3],exc[4]))
-            s.append(StepAttributes(step.text(),step.synopsis(),step.actor(),step.actorType(),step.tags(),excs)) 
+            s.append(StepAttributes(step.text(),step.synopsis(),step.actor(),step.actorType(),step.tags())) 
           real_prop.theSteps = s
           new_props.append(real_prop)
     elif fake_props is not None:
@@ -237,11 +212,8 @@ class UseCaseDAO(CairisDAO):
         for fake_prop in fake_props:
           check_required_keys(fake_prop, UseCaseEnvironmentPropertiesModel.required)
           steps = Steps()
-          for fs in fake_prop['theSteps']:
-            aStep = Step(fs['theStepText'],fs['theSynopsis'],fs['theActor'],fs['theActorType'],fs['theTags'])
-            for exc in fs['theExceptions']:
-              aStep.addException((exc['theName'],exc['theDimensionType'],exc['theDimensionValue'],exc['theCategoryName'],exc['theDescription']))
-            steps.append(aStep)
+          for s in fake_prop['theSteps']:
+            steps.append(Step(s['theStepText'],s['theSynopsis'],s['theActor'],s['theActorType'],s['theTags']))
           fake_prop['theSteps'] = steps
           
           new_prop = UseCaseEnvironmentProperties(
@@ -255,19 +227,3 @@ class UseCaseDAO(CairisDAO):
       self.close()
       raise MissingParameterHTTPError(param_names=['real_props', 'fake_props'])
     return new_props
-
-  def generate_obstacle_from_usecase(self,uc,environment_name,step_name,exception_name):
-    for env in uc.environmentProperties():
-      if (env.theEnvironmentName == environment_name):
-        for ucStep in env.theSteps:
-          if (ucStep.text() == step_name):
-            for excName in ucStep.theExceptions:
-              if (excName == exception_name):
-                excDetails = ucStep.theExceptions[excName]
-                obsName = excDetails[0]
-                excDim = excDetails[1]
-                excVal = excDetails[2]
-                excCat = excDetails[3]
-                excDef = excDetails[4]
-                obsParameters = cairis.core.ObstacleFactory.build(environment_name,obsName,excDim,excVal,excCat,excDef)
-                self.db_proxy.addObstacle(obsParameters)

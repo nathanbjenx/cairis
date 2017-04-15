@@ -264,12 +264,11 @@ function handleNodeClick(event,objt) {
           $("#optionsHeaderGear").text("Goal properties");
           $.each(data.theEnvironmentProperties, function (idx, env) {
             if (window.assetEnvironment == env.theEnvironmentName) {
-              $("#theGoalNodeOriginator").val(data.theOriginator);
-              $("#theGoalNodeCategory").val(env.theCategory);
-              $("#theGoalNodeDefinition").val(env.theDefinition);
-              $("#theGoalNodeFitCriterion").val(env.theFitCriterion);
-              $("#theGoalNodePriority").val(env.thePriority);
-              $("#theGoalNodeIssue").val(env.theIssue);
+              $("#theCategory").val(env.theCategory);
+              $("#theDefinition").val(env.theDefinition);
+              $("#theFitCriterion").val(env.theFitCriterion);
+              $("#thePriority").val(env.thePriority);
+              $("#theIssue").val(env.theIssue);
               forceOpenOptions();
             }
           });
@@ -578,11 +577,10 @@ function handleNodeClick(event,objt) {
           $("#optionsHeaderGear").text("Obstacle properties");
           $.each(data.theEnvironmentProperties, function (idx, env) {
             if (window.assetEnvironment == env.theEnvironmentName) {
-              $('#theObstacleNodeCategory').val(env.theCategory);
-              $('#theObstacleNodeOriginator').val(data.theOriginator);
-              $('#theObstacleNodeDefinition').val(env.theDefinition);
-              $('#theObstacleNodeProbability').val(env.theProbabilty);
-              $('#theObstacleNodeProbabilityRationale').val(env.theProbabiltyRationale);
+              $('#theCategory').val(env.theCategory);
+              $('#theDefinition').val(env.theDefinition);
+              $('#theProbability').val(env.theProbabilty);
+              $('#theProbabilityRationale').val(env.theProbabiltyRationale);
               forceOpenOptions();
             } 
           });
@@ -689,21 +687,21 @@ function handleNodeClick(event,objt) {
           $.session.set("UseCase", JSON.stringify(data));
           $('#useCasesForm').loadJSON(data,null);
           $("#optionsHeaderGear").text("Use Case properties");
-          $("#theUseCaseNodeDescription").val(data.theDescription);
+          $("#theDescription").val(data.theDescription);
           $.each(data.theEnvironmentProperties, function (idx, env) {
             if (window.assetEnvironment == env.theEnvironmentName) {
-              $("#theUseCaseNodePreCond").val(env.thePreCond);
-              $("#theUseCaseNodePostCond").val(env.thePostCond);
+              $("#thePreCond").val(env.thePreCond);
+              $("#thePostCond").val(env.thePostCond);
               var dimValues = [];
               for (var i = 0; i < env.theSteps.length; i++) {
                 dimValues.push("<tr><td>" + String(i + 1) + "</td><td>" + env.theSteps[i].theStepText + "</td></tr>"); 
               }
-              $("#theUseCaseNodeSteps").find("tbody").append(dimValues.join(' '));
+              $("#theSteps").find("tbody").append(dimValues.join(' '));
               dimValues = [];
               for (var i = 0; i < data.theActors.length; i++) {
                 dimValues.push("<tr><td>" + data.theActors[i]+ "</td></tr>"); 
               }
-              $("#theUseCaseNodeActors").find("tbody").append(dimValues.join(' '));
+              $("#theActors").find("tbody").append(dimValues.join(' '));
               forceOpenOptions();
             }
           });

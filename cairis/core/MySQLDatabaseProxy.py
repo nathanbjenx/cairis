@@ -11659,7 +11659,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getUseCaseRequirements(self,ucName):
     try:
-      curs = self.conn.cursor()
+      curs = self.conn.connection().connection.cursor()
       curs.execute('call useCaseRequirements(%s)',[ucName])
       if (curs.rowcount == -1):
         exceptionText = 'Error getting requirements associated with use case ' + ucName
@@ -11677,7 +11677,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getUseCaseGoals(self,ucName,envName):
     try:
-      curs = self.conn.cursor()
+      curs = self.conn.connection().connection.cursor()
       curs.execute('call useCaseGoals(%s,%s)',[ucName,envName])
       if (curs.rowcount == -1):
         exceptionText = 'Error getting goals associated with use case ' + ucName

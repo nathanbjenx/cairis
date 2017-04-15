@@ -82,7 +82,6 @@ class CImportTextAPI(Resource):
     check_required_keys(cimport_params or {}, CImportParams.required)
     file_contents = cimport_params['urlenc_file_contents']
     file_contents = unquote(file_contents)
-    file_contents = file_contents.replace(u"\u2018", "'").replace(u"\u2019", "'")
     type = cimport_params['type']
 
     if file_contents.startswith('<?xml'):

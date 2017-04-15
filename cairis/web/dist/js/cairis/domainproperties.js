@@ -186,7 +186,7 @@ $(document).on("click", "#addNewDomainProperty", function () {
   });
 });
 
-function putDomainProperty(dp, oldName, callback){
+function putDomainProperty(dp, oldName, usePopup, callback){
   var output = {};
   output.object = dp;
   output.session_id = $.session.get('sessionID');
@@ -204,14 +204,18 @@ function putDomainProperty(dp, oldName, callback){
     data: output,
     url: serverIP + "/api/domainproperties/name/" + oldName.replace(" ","%20") + "?session_id=" + $.session.get('sessionID'),
     success: function (data) {
-      showPopup(true);
+      if(usePopup) {
+        showPopup(true);
+      }
       if(jQuery.isFunction(callback)){
         callback();
       }
     },
     error: function (xhr, textStatus, errorThrown) {
-      var error = JSON.parse(xhr.responseText);
-      showPopup(false, String(error.message));
+      if(usePopup) {
+        var error = JSON.parse(xhr.responseText);
+        showPopup(false, String(error.message));
+      }
       debugLogger(String(this.url));
       debugLogger("error: " + xhr.responseText +  ", textstatus: " + textStatus + ", thrown: " + errorThrown);
     }

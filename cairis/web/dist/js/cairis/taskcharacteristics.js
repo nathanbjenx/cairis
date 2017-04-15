@@ -294,7 +294,7 @@ mainContent.on('click', '#CloseTaskCharacteristic', function (e) {
 });
 
 function appendTaskGWR(tableId,gwrType,item) {
-  $(tableId).find("tbody").append('<tr><td class="deletetc' + gwrType + '"><i class="fa fa-minus"></i></td><td class="tc_' + gwrType + '"">'+ item.theReferenceName +'</td><td>' + item.theDimensionName + '</td><td>' + item.theReferenceDescription + '</td></tr>');
+  $(tableId).find("tbody").append('<tr><td class="deletetc' + gwrType + '"><i class="fa fa-minus"></i></td><td class="' + gwrType + '"">'+ item.theReferenceName +'</td><td>' + item.theDimensionName + '</td><td>' + item.theReferenceDescription + '</td></tr>');
 };
 
 function appendTaskBacking(item) {
@@ -330,35 +330,28 @@ $('#editCharacteristicReference').on("change", "#theArtifactType", function(){
   });
 });
 
-
-
 function addTaskCharacteristicReference(e) {
   e.preventDefault();
   var cr = JSON.parse($("#editCharacteristicReference").data("crtype"));
   var item = jQuery.extend(true, {},characteristicReferenceDefault );
   item.theReferenceName = $("#theReferenceName").val();
   item.theReferenceDescription = $("#theDescription").val();
+  appendTaskGWR(cr.tableId,cr.classId,item); 
   item.theDimensionName = 'document';
   var tc = JSON.parse($.session.get("TaskCharacteristic"));
-
-  if (cr.tableId == '#theGrounds' && gwrItemPresent(tc.theGrounds,item.theReferenceName) == false) {
+  if (cr.tableId == '#theGrounds') {
     item.theCharacteristicType = 'grounds';
     tc.theGrounds.push(item);
-    appendTaskGWR(cr.tableId,cr.classId,item);
-    $.session.set("TaskCharacteristic", JSON.stringify(tc));
   }
-  else if (cr.tableId == '#theWarrant' && gwrItemPresent(pc.theWarrant,item.theReferenceName) == false) {
+  else if (cr.tableId == '#theWarrant') {
     item.theCharacteristicType = 'warrant';
     tc.theWarrant.push(item);
-    appendTaskGWR(cr.tableId,cr.classId,item);
-    $.session.set("TaskCharacteristic", JSON.stringify(tc));
   }
-  else if (cr.tableId == '#theRebuttal' && gwrItemPresent(pc.theRebuttal,item.theReferenceName) == false) {
+  else {
     item.theCharacteristicType = 'rebuttal';
     tc.theRebuttal.push(item);
-    appendTaskGWR(cr.tableId,cr.classId,item);
-    $.session.set("TaskCharacteristic", JSON.stringify(tc));
   }
+  $.session.set("TaskCharacteristic", JSON.stringify(tc));
   $("#editCharacteristicReference").modal('hide');
 }
 
@@ -438,11 +431,12 @@ $("#editCharacteristicReference").on('shown.bs.modal', function() {
 });
 
 $("#editCharacteristicReference").on('click', '#saveCharacteristicReference',function(e) {
+  $("#editCharacteristicReference").data("savedcr",true);
   var cmd = $("#editCharacteristicReference").data("savecr");
   cmd(e);
 });
 
-mainContent.on("click",".tc_ground", function () {
+mainContent.on("click",".ground", function () {
   var propRow = $(this).closest("tr");
   var cr = {};
   cr.name = propRow.find("td:eq(1)").text();
@@ -455,7 +449,7 @@ mainContent.on("click",".tc_ground", function () {
   $("#editCharacteristicReference").data("savecr",updateTaskReferenceList);
   $("#editCharacteristicReference").modal('show');
 });
-mainContent.on("click",".tc_warrant", function () {
+mainContent.on("click",".warrant", function () {
   var propRow = $(this).closest("tr");
   var cr = {};
   cr.name = propRow.find("td:eq(1)").text();
@@ -468,7 +462,7 @@ mainContent.on("click",".tc_warrant", function () {
   $("#editCharacteristicReference").data("savecr",updateTaskReferenceList);
   $("#editCharacteristicReference").modal('show');
 });
-mainContent.on("click",".tc_rebuttal", function () {
+mainContent.on("click",".rebuttal", function () {
   var propRow = $(this).closest("tr");
   var cr = {};
   cr.name = propRow.find("td:eq(1)").text();

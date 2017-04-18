@@ -6678,7 +6678,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     docId = self.newId()
     docName = self.conn.connection()
     docName = docName.connection
-    docName = docName.escape_string(parameters.name())
+    docName = self.conn.escape_string(parameters.name().replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u2013", "-"))
     docVersion = parameters.version()
     docDate = self.conn.connection()
     docDate = docDate.connection
@@ -6736,8 +6736,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addDocumentReference(self,parameters):
     refId = self.newId()
-    refName = parameters.name()
-    docName = parameters.document()
+    refName = self.conn.escape_string(parameters.name().replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u2013", "-"))
+    docName = self.conn.escape_string(parameters.document().replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u2013", "-"))
     cName = parameters.contributor()
     refExc = parameters.description()
     try:

@@ -1872,6 +1872,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def dimensionRoles(self,dimId,environmentId,table):
     try:
       session = self.conn() 
+      session.begin()
       sqlTxt = 'call ' + table + '_roles(%s,%s)' %(dimId,environmentId)
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
@@ -1895,6 +1896,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def personaGoals(self,personaId,environmentId):
     try:
       session = self.conn() 
+      session.begin()
       rs = session.execute('call personaGoals(:pId,:eId)',{'pId':personaId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -1917,6 +1919,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def threatAttackers(self,threatId,environmentId):
     try:
       session = self.conn() 
+      session.begin()
       rs = session.execute('call threat_attacker(:tId,:eId)',{'tId':threatId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -12582,7 +12585,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tmpConn = scoped_session(sessionmaker(bind=dbEngine))
     '''
     session = self.conn()
-      session.begin()
+    session.begin()
     rs = session.execute('show databases')
     if (rs.rowcount == -1):
       exceptionText = 'Error getting available databases'
@@ -12613,7 +12616,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       dbEngine = create_engine('mysql+mysqldb://root'+':'+rPasswd+'@'+dbHost+':'+str(dbPort))
       tmpConn = scoped_session(sessionmaker(bind=dbEngine))
       stmt = 'drop database if exists `' + dbName + '`'
-      session = tmpConn
+      session = tmpConn()
+      session.begin()
       rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error running ' + stmt

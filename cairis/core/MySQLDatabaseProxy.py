@@ -107,6 +107,7 @@ import os
 from numpy import *
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+import pdb
 __author__ = 'Shamal Faily, Robin Quetin, Nathan Jenkins'
 
 LABEL_COL = 0
@@ -356,7 +357,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     idLookup  = {}
     nameLookup = {}
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call traceDimensions()')
       if (rs.rowcount == -1):
         exceptionText = 'Error building dimension lookup tables'
@@ -379,7 +381,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRequirements(self,constraintId = '',isAsset = 1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getRequirements(:constId,:isAs)',{'constId':constraintId,'isAs':isAsset})
       if (rs.rowcount == -1):
         exceptionText = 'Undefined error while loading the requirements environment'
@@ -410,7 +413,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRequirement(self,reqId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getRequirement(:reqId)',{'reqId':reqId})
       if (rs.rowcount == -1):
         exceptionText = 'Undefined error while loading the requirements environment'
@@ -441,7 +445,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getOrderedRequirements(self,constraintId = '',isAsset = True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getRequirements(:constId,:isAs)',{'constId':constraintId,'isAs':isAsset})
       if (rs.rowcount == -1):
         exceptionText = 'Undefined error while loading the requirements environment'
@@ -473,7 +478,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   
   def newId(self):
     try: 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call newId()')
       if (rs.rowcount == -1):
         exceptionText = 'Error getting last id'
@@ -490,7 +496,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   
   def addRequirement(self,r,assetName,isAsset = True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addRequirement(:lbl,:id,:vers,:name,:desc,:rationale,:origin,:fCrit,:priority,:type,:asName,:isAs)',{'lbl':r.label(),'id':r.id(),'vers':r.version(),'name':r.name(),'desc':r.description(),'rationale':r.rationale(),'origin':r.originator(),'fCrit':r.fitCriterion(),'priority':r.priority(),'type':r.type(),'asName':assetName,'isAs':isAsset})
       if (rs.rowcount == -1):
         exceptionText = 'Error inserting new requirement ' + str(r.id())
@@ -505,7 +512,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateRequirement(self,r):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateRequirement(:lbl,:id,:vers,:name,:desc,:rationale,:origin,:fCrit,:priority,:type)',{'lbl':r.label(),'id':r.id(),'vers':r.version(),'name':r.name(),'desc':r.description(),'rationale':r.rationale(),'origin':r.originator(),'fCrit':r.fitCriterion(),'priority':r.priority(),'type':r.type()})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating requirement ' + str(r.id())
@@ -529,7 +537,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addValueTension(self,envId,spId,prId,tId,tRationale):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addValueTension(:env,:sp,:pr,:tId,:rationale)',{'env':envId,'sp':spId,'pr':prId,'tId':tId,'rationale':tRationale})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding value tension for environment id ' + str(envId)
@@ -547,7 +556,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     environmentShortCode = parameters.shortCode()
     environmentDescription = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       #rs = session.execute('call addEnvironment(:id,:name,:shortCode,:desc)',{'id':environmentId,'name':environmentName,'shortCode':environmentShortCode,'desc':environmentDescription})
       sql = 'call addEnvironment(%s,"%s","%s","%s")'%(environmentId,environmentName,environmentShortCode,environmentDescription)
       rs = session.execute(sql)
@@ -578,7 +588,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addCompositeEnvironmentProperties(self,environmentId,duplicateProperty,overridingEnvironment):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addCompositeEnvironmentProperties(:id,:dp,:oe)',{'id':environmentId,'dp':duplicateProperty,'oe':overridingEnvironment})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding duplicate properties for environment id ' + str(environmentId)
@@ -590,7 +601,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskEnvironments(self,threatName,vulName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskEnvironments(:threat,:vul)',{'threat':threatName,'vul':vulName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting environments associated with threat ' + threatName + ' and vulnerability ' + vulName
@@ -609,7 +621,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskEnvironmentsByRisk(self,riskName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskEnvironmentsByRisk(:risk)',{'risk':riskName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting environments associated with risk ' + riskName 
@@ -633,7 +646,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     environmentDescription = parameters.description()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteEnvironmentComponents(:id)',{'id':parameters.id()})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating environment ' + environmentName
@@ -664,7 +678,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getEnvironments(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getEnvironments(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining requirement environment list'
@@ -699,7 +714,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def compositeEnvironments(self,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call compositeEnvironments(:id)',{'id':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining composite environments for environment id ' + str(environmentId)
@@ -718,7 +734,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def compositeEnvironmentIds(self,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call compositeEnvironmentIds(:id)',{'id':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining composite environments for environment id ' + str(environmentId)
@@ -737,7 +754,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def duplicateProperties(self,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call duplicateProperties(:id)',{'id':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining duplicate property for composite environment id ' + str(environmentId)
@@ -756,7 +774,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getAttackers(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getAttackers(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         rs.close()
@@ -794,7 +813,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   
   def dimensionEnvironments(self,dimId,dimTable):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       sqlTxt = 'call ' + dimTable + '_environments(%s)' %(dimId)
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
@@ -816,7 +836,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def attackerMotives(self,attackerId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call attacker_motivation(:aId,:eId)',{'aId':attackerId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -837,7 +858,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def threatLikelihood(self,threatId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select threat_likelihood(:tId,:eId)',{'tId':threatId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -856,7 +878,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def vulnerabilitySeverity(self,vulId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select vulnerability_severity(:vId,eId)',{'vId':vulId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -875,7 +898,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def attackerCapabilities(self,attackerId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call attacker_capability(:aId,:eId)',{'aId':attackerId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -901,7 +925,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       attackerDesc = parameters.description()
       attackerImage = parameters.image()
       tags = parameters.tags()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute("call addAttacker(:id,:name,:desc,:image)",{'id':attackerId,'name':attackerName,'desc':attackerDesc,'image':attackerImage})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding attacker ' + attackerName
@@ -925,7 +950,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addDimensionEnvironment(self,dimId,table,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       sqlTxt = 'call add_' + table + '_environment(%s,"%s")' %(dimId,environmentName)
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
@@ -940,7 +966,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addAttackerMotives(self,attackerId,environmentName,motives):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for motive in motives:
         rs = session.execute('call addAttackerMotive(:aId,:envName,:motive)',{'aId':attackerId,'envName':environmentName,'motive':motive})
         if (rs.rowcount == -1):
@@ -955,7 +982,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addAttackerCapabilities(self,attackerId,environmentName,capabilities):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for name,value in capabilities:
         rs = session.execute('call addAttackerCapability(:aId,:envName,:name,:value)',{'aId':attackerId,'envName':environmentName,'name':name,'value':value})
         if (rs.rowcount == -1):
@@ -970,7 +998,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   
   def updateAttacker(self,parameters):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteAttackerComponents(:id)',{'id':parameters.id()})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating attacker ' + attackerName
@@ -982,7 +1011,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       attackerImage = parameters.image()
       tags = parameters.tags()
 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute("call updateAttacker(:id,:name,:desc,:image)",{'id':attackerId,'name':attackerName,'desc':attackerDesc,'image':attackerImage})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating attacker ' + attackerName
@@ -1006,7 +1036,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteObject(self,objtId,tableName):
     try: 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       sqlTxt = 'call delete_' + tableName + '(%s)' %(objtId)
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
@@ -1036,7 +1067,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
     ifs = parameters.interfaces()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       #rs = session.execute('call addAsset(:id,:name,:shortCode,:desc,:sig,:type,:crit,:rationale)',{'id':assetId,'name':assetName,'shortCode':shortCode,'desc':assetDesc.encode('utf-8'),'sig':assetSig.encode('utf-8'),'type':assetType,'crit':assetCriticality,'rationale':assetCriticalRationale})
       sql ='call addAsset(%s,"%s","%s","%s","%s","%s","%s","%s")'%(assetId,assetName,shortCode,assetDesc.encode('utf-8'),assetSig.encode('utf-8'),assetType,assetCriticality,assetCriticalRationale)
       rs = session.execute(sql)
@@ -1072,7 +1104,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
     ifs = parameters.interfaces()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteAssetComponents(:id)',{'id':assetId})
  
       if (rs.rowcount == -1):
@@ -1101,7 +1134,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def addTemplateAssetProperties(self,taId,cProp,iProp,avProp,acProp,anProp,panProp,unlProp,unoProp,cRat,iRat,avRat,acRat,anRat,panRat,unlRat,unoRat):
     sqlTxt = 'call add_template_asset_properties(%s,"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s")' %(taId,cProp,iProp,avProp,acProp,anProp,panProp,unlProp,unoProp,cRat,iRat,avRat,acRat,anRat,panRat,unlRat,unoRat)
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         exceptionText = 'Error setting security properties for template asset id ' + str(taId)
@@ -1116,7 +1150,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def updateTemplateAssetProperties(self,taId,cProp,iProp,avProp,acProp,anProp,panProp,unlProp,unoProp,cRat,iRat,avRat,acRat,anRat,panRat,unlRat,unoRat):
     sqlTxt = 'update template_asset_property set property_value_id=%s, property_rationale="%s" where template_asset_id = %s and property_id = %s'
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       stmt = sqlTxt %(cProp,cRat,taId,C_PROPERTY)
       rs = session.execute(stmt)
       if (rs.rowcount == -1):
@@ -1167,7 +1202,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def addSecurityProperties(self,dimTable,objtId,environmentName,securityProperties,pRationale):
     sqlTxt = 'call add_' + dimTable + '_properties(%s,"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s")' %(objtId,environmentName,securityProperties[C_PROPERTY],securityProperties[I_PROPERTY],securityProperties[AV_PROPERTY],securityProperties[AC_PROPERTY],securityProperties[AN_PROPERTY],securityProperties[PAN_PROPERTY],securityProperties[UNL_PROPERTY],securityProperties[UNO_PROPERTY],pRationale[C_PROPERTY],pRationale[I_PROPERTY],pRationale[AV_PROPERTY],pRationale[AC_PROPERTY],pRationale[AN_PROPERTY],pRationale[PAN_PROPERTY],pRationale[UNL_PROPERTY],pRationale[UNO_PROPERTY])
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         exceptionText = 'Error setting security properties for ' + dimTable + ' id ' + str(objtId) + ' in environment ' + environmentName
@@ -1186,7 +1222,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     else:
       sqlTxt += 'update ' + dimTable + '_property set property_value_id=%s, property_rationale="%s" where ' + dimTable + '_id = %s and property_id = %s'
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute(sqlTxt %(securityProperties[C_PROPERTY],pRationale[C_PROPERTY],objtId,C_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating confidentiality property for ' + dimTable + ' id ' + str(objtId)
@@ -1314,7 +1351,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getAssets(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getAssets(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining assets'
@@ -1354,7 +1392,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getThreats(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getThreats(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining threats'
@@ -1396,7 +1435,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     if dimensionTable == 'linkand':
       dimensionTable = 'goalassociation'
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       sqlText = ''
       if ((dimensionTable == 'classassociation') or (dimensionTable == 'goalassociation')):
         associationComponents = dimensionName.split('/')
@@ -1442,7 +1482,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getDimensions(self,dimensionTable,idConstraint=-1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getDimensions(:dimensionTable, :idConstraint)',{'dimensionTable':dimensionTable,'idConstraint':idConstraint})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining ' + dimensionTable + 's'
@@ -1465,7 +1506,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def getDimensionNames(self,dimensionTable,currentEnvironment = ''):
     try:
       dimensions = []
-      session = self.conn
+      session = self.conn()
+      session.begin()
       if (dimensionTable != 'template_asset' and dimensionTable != 'template_requirement' and dimensionTable != 'template_goal' and dimensionTable != 'locations'):
         sqlText = 'call ' + dimensionTable + 'Names("%s")' 
         rs = session.execute(sqlText %(currentEnvironment))
@@ -1496,7 +1538,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def getEnvironmentNames(self):
     try:
       dimensions = []
-      session = self.conn
+      session = self.conn()
+      session.begin()
       sqlText = 'call nonCompositeEnvironmentNames()' 
       rs = session.execute(sqlText)
       if (rs.rowcount == -1):
@@ -1521,7 +1564,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     threatMethod = parameters.method()
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute("call addThreat(:id,:name,:type,:method)",{'id':threatId,'name':threatName,'type':threatType,'method':threatMethod.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new threat ' + threatName
@@ -1565,7 +1609,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteThreatComponents(:id)',{'id':threatId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating threat ' + threatName
@@ -1603,7 +1648,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getVulnerabilities(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getVulnerabilities(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining vulnerabilities'
@@ -1648,7 +1694,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
     try:
       vulId = self.newId()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addVulnerability(:id,:name,:desc,:type)',{'id':vulId,'name':vulName,'desc':vulDesc.encode('utf-8'),'type':vulType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new vulnerability ' + vulName
@@ -1685,7 +1732,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteVulnerabilityComponents(:id)',{'id':vulId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating vulnerability ' + vulName
@@ -1717,7 +1765,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def relatedProperties(self,dimTable,objtId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       sqlTxt = 'call ' + dimTable + 'Properties (%s,%s)' %(objtId,environmentId)
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
@@ -1737,7 +1786,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def templateAssetProperties(self,taId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       sqlTxt = 'call template_assetProperties(%s)' %(taId)
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
@@ -1772,7 +1822,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getPersonas(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getPersonas(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining personas'
@@ -1820,7 +1871,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def dimensionRoles(self,dimId,environmentId,table):
     try:
-      session = self.conn 
+      session = self.conn() 
       sqlTxt = 'call ' + table + '_roles(%s,%s)' %(dimId,environmentId)
       rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
@@ -1843,7 +1894,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def personaGoals(self,personaId,environmentId):
     try:
-      session = self.conn 
+      session = self.conn() 
       rs = session.execute('call personaGoals(:pId,:eId)',{'pId':personaId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -1865,7 +1916,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def threatAttackers(self,threatId,environmentId):
     try:
-      session = self.conn 
+      session = self.conn() 
       rs = session.execute('call threat_attacker(:tId,:eId)',{'tId':threatId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -1902,7 +1953,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       codes = parameters.codes()
       tags = parameters.tags()
 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addPersona(:id,:name,:act,:att,:apt,:mot,:skills,:intr,:cont,:img,:ass,:type)',{'id':personaId,'name':personaName,'act':activities.encode('utf-8'),'att':attitudes.encode('utf-8'),'apt':aptitudes.encode('utf-8'),'mot':motivations.encode('utf-8'),'skills':skills.encode('utf-8'),'intr':intrinsic.encode('utf-8'),'cont':contextual.encode('utf-8'),'img':image,'ass':isAssumption,'type':pType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new persona ' + personaName
@@ -1928,7 +1980,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addDimensionRoles(self,personaId,table,environmentName,roles):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for role in roles:
         sqlTxt = 'call add_' + table + '_role (%s,"%s","%s")' %(personaId, environmentName,role)
         rs = session.execute(sqlTxt) 
@@ -1959,7 +2012,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deletePersonaComponents(:id)',{'id':personaId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating persona ' + personaName
@@ -1991,7 +2045,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getTasks(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getTasks(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining tasks'
@@ -2036,7 +2091,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getMisuseCases(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getMisuseCases(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining Misuse Cases'
@@ -2070,7 +2126,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskMisuseCase(self,riskId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskMisuseCase(:id)',{'id':riskId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining tasks'
@@ -2102,7 +2159,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def misuseCaseRisk(self,mcId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select misuseCaseRisk(:id)',{'id':mcId})
       rowCount = rs.rowcount
       if (rs.rowcount == -1):
@@ -2125,7 +2183,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskPersonas(self,taskId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call taskPersonas(:tId,:eId)',{'tId':taskId,'eId':environmentId})
       rowCount = rs.rowcount
       personas = []
@@ -2146,7 +2205,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskAssets(self,taskId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call taskAssets(:tId,:eId)',{'tId':taskId,'eId':environmentId})
       rowCount = rs.rowcount
       assets = []
@@ -2174,7 +2234,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
     try:
       taskId = self.newId()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTask(:id,:name,:shortCode,:obj,:ass,:auth)',{'id':taskId,'name':taskName,'shortCode':taskShortCode,'obj':taskObjective,'ass':isAssumption,'auth':taskAuthor})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new task ' + taskName
@@ -2205,7 +2266,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     mcName = parameters.name()
     try:
       mcId = self.newId()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addMisuseCase(:id,:name)',{'id':mcId,'name':mcName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new task ' + scName
@@ -2235,7 +2297,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     taskAuthor = parameters.author()
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteTaskComponents(:id)',{'id':taskId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating task ' + taskName
@@ -2268,7 +2331,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     mcId = parameters.id()
     mcName = parameters.name()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteMisuseCaseComponents(:id)',{'id':mcId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating misuse case ' + mcName
@@ -2293,7 +2357,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTaskPersonas(self,taskId,personas,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for persona,duration,frequency,demands,goalsupport in personas:
         rs = session.execute('call addTaskPersona(:tId,:pers,:dur,:freq,:dem,:goal,:env)',{'tId':taskId,'pers':persona,'dur':duration,'freq':frequency,'dem':demands,'goal':goalsupport,'env':environmentName})
         if (rs.rowcount == -1):
@@ -2306,7 +2371,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTaskAssets(self,taskId,assets,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for asset in assets:
         rs = session.execute('call addTaskAsset(:tId,:ass,:env)',{'tId':taskId,'ass':asset,'env':environmentName})
         if (rs.rowcount == -1):
@@ -2319,7 +2385,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addMisuseCaseRisk(self,mcId,riskName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addMisuseCaseRisk(:id,:risk)',{'id':mcId,'risk':riskName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating risk ' + mcName + ' with misuse case ' + str(mcId)
@@ -2343,7 +2410,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def traceDimensionList(self,dimId,isFrom):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call traceDimensionList(:id,:from)',{'id':dimId,'from':isFrom})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting trace dimensions ' + str(vulId)
@@ -2362,7 +2430,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRisks(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getRisks(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining risks'
@@ -2401,7 +2470,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       riskId = self.newId()
       riskName = parameters.name()
       inTxt = parameters.intent()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addRisk(:threat,:vuln,:rId,:risk,:txt)',{'threat':threatName,'vuln':vulName,'rId':riskId,'risk':riskName,'txt':inTxt})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new risk ' + str(riskId)
@@ -2427,7 +2497,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       tags = parameters.tags()
       riskName = parameters.name()
       inTxt = parameters.intent()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateRisk(:threat,:vuln,:rId,:risk,:txt)',{'threat':threatName,'vuln':vulName,'rId':riskId,'risk':riskName,'txt':inTxt})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating risk ' + str(riskId)
@@ -2453,7 +2524,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getResponses(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getResponses(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining responses'
@@ -2506,7 +2578,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def responseCost(self,responseId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select responseCost(:rId,:eId)',{'rId':responseId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining cost associated with response id ' + str(responseId) + ' in environment id ' + str(environmentId)
@@ -2523,7 +2596,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def responseDescription(self,responseId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select responseDescription(:rId,:eId)',{'rId':responseId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining description associated with response id ' + str(responseId) + ' in environment id ' + str(environmentId)
@@ -2540,7 +2614,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def responseRoles(self,responseId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call responseRoles(:rId,:eId)',{'rId':responseId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining roles associated with response id ' + str(responseId) + ' in environment id ' + str(environmentId)
@@ -2559,7 +2634,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def mitigationType(self,responseId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select mitigationType(:rId,:eId)',{'rId':responseId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining mitigation type associated with response id ' + str(responseId) + ' in environment id ' + str(environmentId)
@@ -2577,7 +2653,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskComponents(self,riskName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskComponents(:rId)',{'rId':riskName})  
       if (rs.rowcount == -1):
         exceptionText = 'Error geting components of risk ' + riskName
@@ -2600,7 +2677,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       respType = parameters.responseType()
       tags = parameters.tags()
       respId = self.newId()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addResponse(:id,:name,:type,:risk)',{'id':respId,'name':respName,'type':respType,'risk':respRisk})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new response ' + mitName
@@ -2637,7 +2715,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addMitigationType(self,responseId,mitType,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call add_response_mitigate(:rId,:env,:type)',{'rId':responseId,'env':environmentName,'type':mitType})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating mitigation type ' + mitType + ' with response ' + str(responseId) + ' in environment ' + environmentName
@@ -2652,7 +2731,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addResponseCost(self,responseId,costName,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addResponseCost(:rId,:name,:env)',{'rId':responseId,'name':costName,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating cost ' + costName + ' with response ' + str(responseId) + ' in environment ' + environmentName
@@ -2666,7 +2746,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addResponseDescription(self,responseId,descriptionText,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addResponseDescription(:id,:desc,:env)',{'id':responseId,'desc':descriptionText,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating description with response ' + str(responseId) + ' in environment ' + environmentName
@@ -2680,7 +2761,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addResponseRoles(self,responseId,roles,environmentName,respDesc):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for role,cost in roles:
         rs = session.execute('call addResponseRole(:id,:role,:cost,:env,:desc)',{'id':responseId,'role':role,'cost':cost,'env':environmentName,'desc':respDesc})
         if (rs.rowcount == -1):
@@ -2700,7 +2782,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
     respId = parameters.id()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteResponseComponents(:id)',{'id':respId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating response ' + respName
@@ -2738,7 +2821,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def detectionPoint(self,responseId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select mitigatePoint(:rId,:eId)',{'rId':responseId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting detection point for detection response id ' + str(mitId)
@@ -2755,7 +2839,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addDetectionPoint(self,mitId,detPoint,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call add_mitigate_point(:id,:env,:point)',{'id':mitId,'env':environmentName,'point':detPoint})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating detection point ' + detPoint + ' for response id ' + str(mitId) + ' in environment ' + environmentName
@@ -2769,7 +2854,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addReactionDetectionMechanism(self,mitId,detMech,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call add_reaction_detection_mechanism(:id,:methc,:env)',{'id':mitId,'metch':detMech,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating detection mechanism ' + detMech + ' with reaction id ' + str(mitId) + ' in environment ' + environmentName
@@ -2783,7 +2869,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def detectionMechanisms(self,responseId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call detectionMechanisms(:rId,:eId)',{'rId':responseId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting detection mechanisms'
@@ -2805,7 +2892,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       return self.riskModel(environmentName,objectName)
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskAnalysisModel(:env)',{'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting traceability links '
@@ -2835,7 +2923,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def removableTraces(self,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call viewRemovableTraces(:env)',{'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting removeable trace relations'
@@ -2860,7 +2949,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def allowableTraceDimension(self,fromId,toId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call allowableTraceDimension(:frm,:to)',{'frm':fromId,'to':toId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting allowable trace dimensions for from_id ' + str(fromId) + ' and to_id ' + str(toId)
@@ -2877,7 +2967,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def reportDependencies(self,dimName,objtId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call reportDependents(:id,:name)',{'id':objtId,'name':dimName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting dependencies for ' + dimName + ' id ' + str(objtId)
@@ -2905,7 +2996,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def threatenedAssets(self,threatId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call threat_asset(:tId,:eId)',{'tId':threatId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining getting assets associated with threat id ' + str(threatId) + ' in environment id ' + str(environmentId)
@@ -2924,7 +3016,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def vulnerableAssets(self,vulId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call vulnerability_asset(:vId,:eId)',{'vId':vulId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining getting assets associated with vulnerability id ' + str(vulId) + ' in environment id ' + str(environmentId)
@@ -2944,7 +3037,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTrace(self,traceTable,fromId,toId,contributionType = 'and'):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
      
       if (traceTable != 'requirement_task' and traceTable != 'requirement_usecase' and traceTable != 'requirement_requirement'):
         sqlText = 'insert into ' + traceTable + ' values(%s,%s)' %(fromId,toId)
@@ -2972,7 +3066,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskRating(self,thrName,vulName,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskRating(:thr,:vuln,:env)',{'thr':thrName,'vuln':vulName,'env':environmentName})
       if (rs.rowcount == -1):
         riskName = thrName + '/' + vulName
@@ -2992,7 +3087,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskScore(self,threatName,vulName,environmentName,riskName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskScore(:threat,:vuln,:env,:risk)',{'threat':threatName,'vuln':vulName,'env':environmentName,'risk':riskName})
       if (rs.rowcount == -1):
         riskName = threatName + '/' + vulName
@@ -3029,7 +3125,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def reqTargetNames(self,reqLabel,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call targetNames(:req,:env)',{'req':reqLabel,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting target names'
@@ -3053,7 +3150,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRoles(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getRoles(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining roles'
@@ -3093,7 +3191,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     shortCode = parameters.shortCode()
     roleDesc = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addRole(:id,:name,:type,:shortCode,:desc)',{'id':roleId,'name':roleName,'type':roleType,'shortCode':shortCode,'desc':roleDesc})
       if (rs.rowcount == -1):
         rs.close()
@@ -3116,7 +3215,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     shortCode = parameters.shortCode()
     roleDesc = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateRole(:id,:name,:type,:shortCode,:desc)',{'id':roleId,'name':roleName,'type':roleType,'shortCode':shortCode,'desc':roleDesc})
       if (rs.rowcount == -1):
         rs.close()
@@ -3137,7 +3237,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def roleResponsibilities(self,roleId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call roleResponses(:rId,:eId)',{'rId':roleId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -3163,7 +3264,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def roleCountermeasures(self,roleId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call roleCountermeasures(:rId,:eId)',{'rId':roleId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -3188,7 +3290,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getCountermeasures(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getCountermeasures(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining countermeasures'
@@ -3226,7 +3329,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def countermeasureCost(self,cmId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select countermeasureCost(:cmId,:envId)',{'cmId':cmId,'envId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining cost associated with countermeasure id ' + str(cmId) + ' in environment id ' + str(environmentId)
@@ -3243,7 +3347,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def countermeasureTargets(self,cmId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call countermeasureRequirements(:cmId,:envId)',{'cmId':cmId,'envId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining requirements associated with countermeasure id ' + str(cmId) + ' in environment id ' + str(environmentId)
@@ -3254,7 +3359,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
         reqs.append(row[0])
       rs.close()
       session.close()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call countermeasureTargets(:cmId,:envId)',{'cmId':cmId,'envId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining targets associated with countermeasure id ' + str(cmId) + ' in environment id ' + str(environmentId)
@@ -3273,7 +3379,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def countermeasureRoles(self,cmId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call countermeasureRoles(:cmId,:envId)',{'cmId':cmId,'envId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining roles associated with countermeasure id ' + str(cmId) + ' in environment id ' + str(environmentId)
@@ -3292,7 +3399,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def countermeasurePersonas(self,cmId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call countermeasurePersonas(:cmId,:envId)',{'cmId':cmId,'envId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining task personas associated with countermeasure id ' + str(cmId) + ' in environment id ' + str(environmentId)
@@ -3323,7 +3431,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
     cmId = self.newId()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addCountermeasure(:id,:name,:desc,:type)',{'id':cmId,'name':cmName,'desc':cmDesc,'type':cmType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new countermeasure ' + cmName
@@ -3358,7 +3467,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     cmId = parameters.id()
     environmentProperties = parameters.environmentProperties()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteCountermeasureComponents(:id)',{'id':cmId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating response ' + respName
@@ -3390,7 +3500,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addCountermeasureTargets(self,cmId,reqs,targets,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for reqLabel in reqs:
         rs = session.execute('call addCountermeasureRequirement(:cmId,:lbl,:env)',{'cmId':cmId,'lbl':reqLabel,'env':environmentName})
         if (rs.rowcount == -1):
@@ -3410,7 +3521,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateCountermeasureTargets(self,cmId,reqs,targets,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for reqLabel in reqs:
         rs = session.execute('call updateCountermeasureRequirement(:cmId,:lbl,:env)',{'cmId':cmId,'lbl':reqLabel,'env':environmentName})
         if (rs.rowcount == -1):
@@ -3447,7 +3559,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def addRequirementRole(self,cmName,roleName,reqName,envName):
     associationId = self.newId()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addRequirementRole(:aId,:cm,:role,:req,:env)',{'aId':associationId,'cm':cmName,'role':roleName,'req':reqName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating requirement ' + reqName + ' with role ' + roleName + ' in environment ' + environmentName
@@ -3462,7 +3575,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def updateRequirementRole(self,cmName,roleName,reqName,envName):
     associationId = self.newId()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateRequirementRole(:aId,:cm,:role,:req,:env)',{'aId':associationId,'cm':cmName,'role':roleName,'req':reqName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating requirement ' + reqName + ' with role ' + roleName + ' in environment ' + environmentName
@@ -3476,7 +3590,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteRequirementRole(self,roleName,reqName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteRequirementRole(:role,:req,:env)',{'role':roleName,'req':reqName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error de-associating requirement ' + reqName + ' with role ' + roleName + ' in environment ' + environmentName
@@ -3490,7 +3605,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addCountermeasureCost(self,cmId,costName,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addCountermeasureCost(:cmId,:cost,:env)',{'cmId':cmId,'cost':costName,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating cost ' + costName + ' with response ' + str(cmId) + ' in environment ' + environmentName
@@ -3504,7 +3620,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addCountermeasureRoles(self,cmId,roles,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for role in roles:
         rs = session.execute('call addCountermeasureRole(:cmId,:role,:env)',{'cmId':cmId,'role':role,'env':environmentName})
         if (rs.rowcount == -1):
@@ -3519,7 +3636,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addCountermeasurePersonas(self,cmId,personas,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for task,persona,duration,frequency,demands,goalSupport in personas:
         rs = session.execute('call addCountermeasurePersona(:id,:persona,:task,:dur,:freq,:dem,:goal,:env)',{'id':cmId,'persona':persona,'task':task,'dur':duration,'freq':frequency,'dem':demands,'goal':goalSupport,'env':environmentName})
         if (rs.rowcount == -1):
@@ -3534,7 +3652,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def personaNarrative(self,scId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select personaNarrative(:scId,:env)',{'scId':scId,'env':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining narrative associated with persona id ' + str(scId) + ' in environment id ' + str(environmentId)
@@ -3551,7 +3670,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def personaDirect(self,scId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select personaDirect(:scId,:env)',{'scId':scId,'env':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining direct flag associated with persona id ' + str(scId) + ' in environment id ' + str(environmentId)
@@ -3571,7 +3691,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addPersonaNarrative(self,stId,environmentName,descriptionText):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addPersonaNarrative(:stId,:desc,:env)',{'stId':stId,'desc':descriptionText,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating narrative with persona ' + str(stId) + ' in environment ' + environmentName
@@ -3585,7 +3706,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addPersonaDirect(self,stId,environmentName,directText):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addPersonaDirect(:stId,:txt,:env)',{'stId':stId,'txt':directText,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating direct flag with persona ' + str(stId) + ' in environment ' + environmentName
@@ -3599,7 +3721,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskNarrative(self,scId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select taskNarrative(:scId,:env)',{'scId':scId,'env':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining narrative associated with task id ' + str(scId) + ' in environment id ' + str(environmentId)
@@ -3616,7 +3739,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskConsequences(self,scId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select taskConsequences(:scId,:env)',{'scId':scId,'env':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining consequences associated with task id ' + str(scId) + ' in environment id ' + str(environmentId)
@@ -3633,7 +3757,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskBenefits(self,scId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select taskBenefits(:scId,:env)',{'scId':scId,'env':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining benefits associated with task id ' + str(scId) + ' in environment id ' + str(environmentId)
@@ -3650,7 +3775,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTaskNarrative(self,scId,narrativeText,cText,bText,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTaskNarrative(:scId,:nTxt,:cTxt,:bTxt,:env)',{'scId':scId,'nTxt':narrativeText,'cTxt':cText,'bTxt':bText,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating narrative with task ' + str(scId) + ' in environment ' + environmentName
@@ -3664,7 +3790,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def misuseCaseNarrative(self,mcId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select misuseCaseNarrative(:mcId,:env)',{'mcId':mcId,'env':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining narrative associated with misuse case id ' + str(mcId) + ' in environment id ' + str(environmentId)
@@ -3681,7 +3808,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addMisuseCaseNarrative(self,mcId,narrativeText,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addMisuseCaseNarrative(:mcId,:nTxt,:env)',{'mcId':mcId,'nTxt':narrativeText,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating narrative with misuse case ' + str(mcId) + ' in environment ' + environmentName
@@ -3695,7 +3823,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskEnvironmentNames(self,riskName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskEnvironmentNames(:risk)',{'risk':riskName})
       if (rs.rowcount == -1):
         rs.close()
@@ -3716,7 +3845,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def threatVulnerabilityEnvironmentNames(self,threatName,vulName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call threatVulnerabilityEnvironmentNames(:threat,:vuln)',{'threat':threatName,'vuln':vulName})
       if (rs.rowcount == -1):
         rs.close()
@@ -3737,7 +3867,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskDependencies(self,tId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select taskDependencies(:tId,:eId)',{'tId':tId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining dependencies associated with task id ' + str(tId) + ' in environment id ' + str(environmentId)
@@ -3754,7 +3885,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTaskDependencies(self,tId,depsText,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTaskDependencies(:tId,:txt,:env)',{'tId':tId,'txt':depsText,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating dependencies with task ' + str(tId) + ' in environment ' + environmentName
@@ -3768,7 +3900,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def requirementLabelId(self,reqLabel):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select requirementLabelId(:lbl)',{'lbl':reqLabel})
       if (rs.rowcount <= 0):
         exceptionText = 'Error getting id for requirement label ' + reqLabel
@@ -3786,7 +3919,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def requirementLabel(self,reqName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select requirementLabel(:name)',{'name':reqName})
       if (rs.rowcount <= 0):
         exceptionText = 'Error getting id for requirement name ' + reqName
@@ -3804,7 +3938,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def requirementLabelById(self,reqId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select requirementLabelById(:id)',{'id':reqId})
       if (rs.rowcount <= 0):
         exceptionText = 'Error getting id for requirement label for id ' + str(reqId)
@@ -3823,7 +3958,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def requirementNameId(self,reqName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select requirementNameId(:name)',{'name':reqName})
       if (rs.rowcount <= 0):
         exceptionText = 'Error getting id for requirement name ' + reqName
@@ -3841,7 +3977,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def mitigatedRisks(self,cmId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call mitigatedRisks(:id)',{'id':cmId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting risks mitigated by countermeasure id ' + str(cmId)
@@ -3861,7 +3998,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteTrace(self,fromObjt,fromName,toObjt,toName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call delete_trace(:fObj,:fName,:tObj,:tName)',{'fObj':fromObjt,'fName':fromName,'tObj':toObjt,'tName':toName})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting trace relation: (' + fromObjt + ',' + fromName + ',' + toObjt + ',' + toName + ')'
@@ -3883,7 +4021,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     goalOrig = parameters.originator()
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addGoal(:id,:name,:orig)',{'id':goalId,'name':goalName,'orig':goalOrig})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new goal ' + goalName
@@ -3916,7 +4055,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     goalOrig = parameters.originator()
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteGoalComponents(:id)',{'id':goalId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating goal ' + goalName
@@ -3947,7 +4087,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getGoals(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getGoals(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goals'
@@ -3977,7 +4118,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getColouredGoals(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getColouredGoals(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goals'
@@ -4034,7 +4176,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def roleTasks(self,environmentName,roles):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       tpSet = set([])
       for role in roles:
         rs = session.execute('call countermeasureTaskPersonas(:role,:env)',{'role':role,'env':environmentName})
@@ -4056,7 +4199,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskUsabilityScore(self,taskName,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select task_usability(:task,:env)',{'task':taskName,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining usability score for task ' + taskName + ' in environment ' + environmentName
@@ -4074,7 +4218,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskLoad(self,taskId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select usability_score(:tId,:eId)',{'tId':taskId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining task load for task id ' + str(taskId) + ' in environment ' + environmentId
@@ -4092,7 +4237,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def countermeasureLoad(self,taskId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select hindrance_score(:tId,:eId)',{'tId':taskId,'eId':environmentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining countermeasure load for task id ' + str(taskId) + ' in environment ' + environmentId
@@ -4110,7 +4256,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def environmentDimensions(self,dimension,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call ' + dimension + 'Names(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining ' + dimension + 's for environment ' + envName
@@ -4160,7 +4307,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalModelElements(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call goalModelElements(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goal model elements for environment ' + envName
@@ -4180,7 +4328,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def obstacleModelElements(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call obstacleModelElements(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining obstacle model elements for environment ' + envName
@@ -4200,7 +4349,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def responsibilityModelElements(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call responsibilityModelElements(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining responsibility model elements for environment ' + envName
@@ -4220,7 +4370,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskModelElements(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call taskModelElements(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining task model elements for environment ' + envName
@@ -4240,7 +4391,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def classModelElements(self,envName,hideConcerns = False):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       if (hideConcerns == True):
         rs = session.execute('call concernlessClassModelElements(:env)',{'env':envName})
       else:
@@ -4280,7 +4432,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def classAssociations(self,procName,constraintId = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute(procName %(constraintId))
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining class associations'
@@ -4317,7 +4470,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def classTreeAssociations(self,procName,assetName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute(procName %(assetName,envName))
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining class associations'
@@ -4367,7 +4521,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tailAsset = parameters.tailAsset()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addClassAssociation(:ass,:env,:hAss,:hType,:hNav,:hMult,:hRole,:tRole,:tMult,:tNav,:tType,:tAss)',{'ass':associationId,'env':envName,'hAss':headAsset,'hType':headType,'hNav':headNav,'hMult':headMult,'hRole':headRole,'tRole':tailRole,'tMult':tailMult,'tNav':tailNav,'tType':tailType,'tAss':tailAsset})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new class association ' + envName + '/' + headAsset + '/' + tailAsset
@@ -4396,7 +4551,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tailAsset = parameters.tailAsset()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateClassAssociation(:ass,:env,:hAss,:hType,:hNav,:hMult,:hRole,:tRole,:tMult,:tNav,:tType,:tAss)',{'ass':associationId,'env':envName,'hAss':headAsset,'hType':headType,'hNav':headNav,'hMult':headMult,'hRole':headRole,'tRole':tailRole,'tMult':tailMult,'tNav':tailNav,'tType':tailType,'tAss':tailAsset})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating class association ' + envName + '/' + headAsset + '/' + tailAsset
@@ -4447,7 +4603,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalAssociations(self,procName,constraintId = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute(procName %(constraintId))
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goal associations'
@@ -4478,7 +4635,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskObstacleModel(self,riskName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskObstacleTree(:risk,:env,0)',{'risk':riskName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining risk obstacle model'
@@ -4509,7 +4667,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalTreeAssociations(self,procName,goalName,envName,topLevelGoals = 0,caseFilter = 0):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       if (procName == 'call goalTree("%s","%s","%s","%s")') or (procName == 'call obstacleTree("%s","%s","%s","%s")'):
         rs = session.execute(procName %(goalName,envName,topLevelGoals,caseFilter))
       else:
@@ -4555,7 +4714,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     alternativeId = parameters.alternative()
     rationale = parameters.rationale()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addGoalAssociation(:assId,:env,:goal,:dim,:type,:sGName,:sGDName,:altId,:rationale)',{'assId':associationId,'env':envName,'goal':goalName,'dim':goalDimName,'type':aType,'sGName':subGoalName,'sGDName':subGoalDimName,'altId':alternativeId,'rationale':rationale})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new goal association ' + envName + '/' + goalName + '/' + subGoalName
@@ -4580,7 +4740,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     alternativeId = parameters.alternative()
     rationale = parameters.rationale()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateGoalAssociation(:assId,:env,:goal,:dim,:type,:sGName,:sGDName,:altId,:rationale)',{'assId':associationId,'env':envName,'goal':goalName,'dim':goalDimName,'type':aType,'sGName':subGoalName,'sGDName':subGoalDimName,'altId':alternativeId,'rationale':rationale})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating goal association ' + envName + '/' + goalName + '/' + subGoalName
@@ -4595,7 +4756,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteGoalAssociation(self,associationId,goalDimName,subGoalDimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call delete_goalassociation(:ass,:gDName,:sGDName)',{'ass':associationId,'gDName':goalDimName,'sGDName':subGoalDimName})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting goal association id ' + str(objtId)
@@ -4614,7 +4776,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addGoalDefinition(self,goalId,environmentName,goalDef):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addGoalDefinition(:gId,:env,:gDef)',{'gId':goalId,'env':environmentName,'gDef':goalDef})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating goal id ' + str(goalId) + ' with definition:' + goalDef
@@ -4628,7 +4791,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addGoalCategory(self,goalId,environmentName,goalCat):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addGoalCategory(:gId,:env,:gCat)',{'gId':goalId,'env':environmentName,'gCat':goalCat})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating goal id ' + str(goalId) + ' with category ' + goalCat
@@ -4642,7 +4806,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addGoalPriority(self,goalId,environmentName,goalPri):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addGoalPriority(:gId,:env,:gPri)',{'gId':goalId,'env':environmentName,'gPri':goalPri})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating goal id ' + str(goalId) + ' with priority ' + goalPri
@@ -4656,7 +4821,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addGoalFitCriterion(self,goalId,environmentName,goalFC):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addGoalFitCriterion(:gId,:env,:gFC)',{'gId':goalId,'env':environmentName,'gFC':goalFC})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating goal id ' + str(goalId) + ' with fit criterion: ' + goalFC
@@ -4670,7 +4836,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addGoalIssue(self,goalId,environmentName,goalIssue):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addGoalIssue(:gID,:env,:gIssue)',{'gID':goalId,'env':environmentName,'gIssue':goalIssue})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating goal id ' + str(goalId) + ' with issue: ' + goalIssue
@@ -4702,7 +4869,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addGoalConcernAssociation(self,goalId,environmentName,source,sourceMultiplicity,link,target,targetMultiplicity):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addGoalConcernAssociation(:gId,:env,:src,:sMulti,:link,:trgt,:tMulti)',{'gId':goalId,'env':environmentName,'src':source,'sMulti':sourceMultiplicity,'linl':link,'trgt':target,'tMulti':targetMultiplicity})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating concern with goal id ' + str(goalId)
@@ -4720,7 +4888,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTaskConcernAssociation(self,taskId,environmentName,source,sourceMultiplicity,link,target,targetMultiplicity):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTaskConcernAssociation(:tId,:env,:src,:sMulti,:link,:trgt,:tMulti)',{'tId':taskId,'env':environmentName,'src':source,'sMulti':sourceMultiplicity,'link':link,'trgt':target,'tMutli':targetMultiplicity})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating concern with task id ' + str(taskId)
@@ -4760,7 +4929,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addObstacleConcern(self,obsId,environmentName,concern):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call add_obstacle_concern(:oId,:env,:conc)',{'oId':obsId,'env':environmentName,'conc':concern})
       if (rs.rowcount == -1):
         rs.close()
@@ -4789,7 +4959,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addGoalConcern(self,goalId,environmentName,concern):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call add_goal_concern(:goal,:env,:conc)',{'goal':goalId,'env':environmentName,'conc':concern})
       if (rs.rowcount == -1):
         rs.close()
@@ -4810,7 +4981,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalLabel(self,goalId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select goal_label(:gId,:eId)',{'gId':goalId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -4829,7 +5001,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalDefinition(self,goalId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select goal_definition(:gId,:eId)',{'gId':goalId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -4848,7 +5021,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalCategory(self,goalId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select goal_category(:gId,:eId)',{'gId':goalId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -4867,7 +5041,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalPriority(self,goalId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select goal_priority(:gId,:eId)',{'gId':goalId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -4886,7 +5061,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalFitCriterion(self,goalId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select goal_fitcriterion(:gId,:eId)',{'gId':goalId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -4905,7 +5081,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalIssue(self,goalId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select goal_issue(:gId,:eId)',{'gId':goalId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -4924,7 +5101,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalRefinements(self,goalId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call goalRefinements(:gId,:eId)',{'gId':goalId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -4945,7 +5123,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
         goalRefinements.append((goalName,goalDimName,aType,altName,rationale))
       rs.close()
       session.close()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call subGoalRefinements(:gId,:eId)',{'gId':goalId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -4974,7 +5153,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def assetAssociations(self,assetId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call assetAssociations(:aId,:eId)',{'aId':assetId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -5004,7 +5184,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getDomainProperties(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getDomainProperties(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining domainProperties'
@@ -5040,7 +5221,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     dpOrig = parameters.originator()
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addDomainProperty(:id,:name,:desc,:type,:orig)',{'id':dpId,'name':dpName,'desc':dpDesc,'type':dpType,'orig':dpOrig})
       if (rs.rowcount == -1):
         rs.close()
@@ -5065,7 +5247,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     dpOrig = parameters.originator()
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateDomainProperty(:id,:name,:desc,:type,:orig)',{'id':dpId,'name':dpName,'desc':dpDesc,'type':dpType,'orig':dpOrig})
       if (rs.rowcount == -1):
         rs.close()
@@ -5087,7 +5270,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getObstacles(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getObstacles(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining obstacles'
@@ -5136,7 +5320,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def obstacleDefinition(self,obsId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select obstacle_definition(:oId,:eId)',{'oId':obsId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -5158,7 +5343,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def obstacleProbability(self,obsId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call obstacle_probability(:oId,:eId)',{'oId':obsId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -5178,7 +5364,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def obstacleCategory(self,obsId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select obstacle_category(:oId,:eId)',{'oId':obsId,'eId':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -5201,7 +5388,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     obsOrig = parameters.originator().encode('utf-8')
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addObstacle(:id,:name,:orig)',{'id':obsId,'name':obsName,'orig':obsOrig})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new obstacle ' + obsName
@@ -5230,7 +5418,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     obsOrig = parameters.originator()
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteObstacleComponents(:id)',{'id':obsId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating obstacle ' + obsName
@@ -5257,7 +5446,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addObstacleDefinition(self,obsId,environmentName,obsDef,obsProb,obsProbRat):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addObstacleDefinition(:id,:env,:def,:prob,:probRat)',{'id':obsId,'env':environmentName,'def':obsDef,'prob':obsProb,'probRat':obsProbRat})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating obstacle id ' + str(obsId) + ' with definition:' + obsDef
@@ -5271,7 +5461,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addObstacleCategory(self,obsId,environmentName,obsCat):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addObstacleCategory(:obs,:env,:cat)',{'obs':obsId,'env':environmentName,'cat':obsCat})
       if (rs.rowcount == -1):
         exceptionText = 'Error associating obstacle id ' + str(obsId) + ' with category ' + obsCat
@@ -5288,7 +5479,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateSettings(self, projName, background, goals, scope, definitions, contributors,revisions,richPicture,fontSize = '7.5',fontName = 'Times New Roman'):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateProjectSettings(:proj,:bg,:goals,:scope,:picture,:fontSize,:font)',{'proj':projName,'bg':background.encode('utf-8'),'goals':goals.encode('utf-8'),'scope':scope.encode('utf-8'),'picture':richPicture,'fontSize':fontSize,'font':fontName})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating project settings'
@@ -5330,7 +5522,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getProjectSettings(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getProjectSettings()')
       if (rs.rowcount == -1):
         exceptionText = 'Error getting project settings'
@@ -5349,7 +5542,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   
   def getDictionary(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getDictionary()')
       if (rs.rowcount == -1):
         exceptionText = 'Error getting project naming conventions'
@@ -5368,7 +5562,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getContributors(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getContributors()')
       if (rs.rowcount == -1):
         exceptionText = 'Error getting project naming conventions'
@@ -5387,7 +5582,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRevisions(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getRevisions()')
       if (rs.rowcount == -1):
         exceptionText = 'Error getting project revisions'
@@ -5406,7 +5602,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRequirementVersions(self,reqId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getRequirementVersions(:id)',{'id':reqId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting requirement versions'
@@ -5425,7 +5622,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def existingResponseGoal(self,responseId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select existingResponseGoal(:id)',{'id':responseId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goal associated with response id ' + str(responseId)
@@ -5448,7 +5646,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       if (dimName not in customisableValues):
         exceptionText = 'Values for ' + dimName + ' are not customisable.'
         raise DatabaseProxyException(exceptionText) 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getCustomisableValues(:dim,:env)',{'dim':dimName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goal associated with response id ' + str(responseId)
@@ -5511,7 +5710,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       raise DatabaseProxyException(exceptionText) 
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addValueType(:id,:name,:desc,:type,:score,:rat)',{'id':valueTypeId,'name':vtName,'desc':vtDesc,'type':vtType,'score':vtScore,'rat':vtRat})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding ' + vtType + ' ' + vtName
@@ -5534,7 +5734,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     vtScore = parameters.score()
     vtRat = parameters.rationale()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateValueType(:id,:name,:desc,:type,:env,:score,:rat)',{'id':valueTypeId,'name':vtName,'desc':vtDesc,'type':vtType,'env':envName,'score':vtScore,'rat':vtRat})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating ' + vtType + ' ' + vtName
@@ -5549,7 +5750,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def threatTypes(self,envName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call threatTypes(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting threat types'
@@ -5629,7 +5831,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getVulnerabilityDirectory(self,vulName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getVulnerabilityDirectory(:vuln)',{'vuln':vulName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting vulnerability directory'
@@ -5653,7 +5856,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getThreatDirectory(self,thrName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getThreatDirectory(:threat)',{'threat':thrName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting threat directory'
@@ -5672,7 +5876,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def reassociateAsset(self,assetName,envName,reqId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call reassociateAsset(:ass,:env,:req)',{'ass':assetName,'env':envName,'req':reqId})
       if (rs.rowcount == -1):
         exceptionText = 'Error re-associating requirement id ' + str(reqId) + ' with asset ' + assetName
@@ -5687,7 +5892,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def obstacleConcerns(self,obsId,envId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call obstacleConcerns(:obs,:env)',{'obs':obsId,'env':envId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining concerns for obstacle id ' + str(obsId) + ' in environment id ' + str(envId)
@@ -5707,7 +5913,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalConcerns(self,goalId,envId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call goalConcerns(:goal,:env)',{'goal':goalId,'env':envId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining concerns for goal id ' + str(goalId) + ' in environment id ' + str(envId)
@@ -5727,7 +5934,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalConcernAssociations(self,goalId,envId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call goalConcernAssociations(:goal,:env)',{'goal':goalId,'env':envId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining concern associations for goal id ' + str(goalId) + ' in environment id ' + str(envId)
@@ -5747,7 +5955,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskConcernAssociations(self,taskId,envId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call taskConcernAssociations(:task,:env)',{'task':taskId,'env':envId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining concern associations for task id ' + str(taskId) + ' in environment id ' + str(envId)
@@ -5767,7 +5976,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getDependencies(self,constraintId = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getDependencies(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining dependencies'
@@ -5803,7 +6013,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     dependencyName = parameters.dependency()
     rationale = parameters.rationale()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addDependency(:id,:env,:depender,:dependee,:type,:name,:rationale)',{'id':depId,'env':envName,'depender':depender,'dependee':dependee,'type':dType,'name':dependencyName,'rationale':rationale})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new dependency ' + envName + '/' + depender + '/' + dependee
@@ -5827,7 +6038,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     dependencyName = parameters.dependency()
     rationale = parameters.rationale()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateDependency(:id,:env,:depender,:dependee,:type,:name,:rationale)',{'id':depId,'env':envName,'depender':depender,'dependee':dependee,'type':dType,'name':dependencyName,'rationale':rationale})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating dependency ' + envName + '/' + depender + '/' + dependee
@@ -5842,7 +6054,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteDependency(self,depId,depType):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call delete_dependency(:id,:type)',{'id':depId,'type':depType})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting dependency id ' + str(depId)
@@ -5860,7 +6073,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getDependencyTable(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call dependencyTable(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting dependency table for environment ' + envName
@@ -5884,7 +6098,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def getDependencyTables(self):
     envs = self.getEnvironmentNames()
     deps = {}
-    session = self.conn
+    session = self.conn()
+      session.begin()
     for env in envs:
       depRows = self.getDependencyTable(env)
       if (len(depRows) > 0):
@@ -5893,7 +6108,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def reportAssociationDependencies(self,fromAsset,toAsset,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call associationDependencyCheck(:from,:to,:env)',{'from':fromAsset,'to':toAsset,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting association dependencies between ' + fromAsset + ' and ' + toAsset + ' in environment ' + envName
@@ -5915,7 +6131,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def reportAssociationTargetDependencies(self,assetProperties,toAsset,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call associationTargetDependencyCheck(:a0,:a1,:a2,:a3,:a4,:a5,:a6,:a7,:to,:env)',{'a0':assetProperties[0],'a1':assetProperties[1],'a2':assetProperties[2],'a3':assetProperties[3],'a4':assetProperties[4],'a5':assetProperties[5],'a6':assetProperties[6],'a7':assetProperties[7],'to':toAsset,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting association dependencies between the current asset and ' + toAsset + ' in environment ' + envName
@@ -5963,7 +6180,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
     ifs = parameters.interfaces()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTemplateAsset(:id,:name,:shortCode,:desc,:sig,:type,:surfType,:rights)',{'id':assetId,'name':assetName,'shortCode':shortCode,'desc':assetDesc,'sig':assetSig,'type':assetType,'surfType':surfaceType,'rights':accessRight})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new asset ' + assetName
@@ -6010,7 +6228,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateTemplateAsset(:id,:name,:shortCode,:desc,:sig,:type,:surfType,:rights)',{'id':assetId,'name':assetName,'shortCode':shortCode,'desc':assetDesc,'sig':assetSig,'type':assetType,'surfType':surfaceType,'rights':accessRight})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating template asset ' + assetName
@@ -6029,7 +6248,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getTemplateAssets(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getTemplateAssets(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining template assets'
@@ -6070,7 +6290,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getSecurityPatterns(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getSecurityPatterns(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining security patterns'
@@ -6101,7 +6322,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def patternStructure(self,patternId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getSecurityPatternStructure(:pat)',{'pat':patternId})
       if (rs.rowcount == -1):
         rs.close()
@@ -6122,7 +6344,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def patternRequirements(self,patternId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getSecurityPatternRequirements(:pat)',{'pat':patternId})
       if (rs.rowcount == -1):
         rs.close()
@@ -6158,7 +6381,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     patternStructure = parameters.associations()
     patternRequirements = parameters.requirements()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addSecurityPattern(:id,:name,:cont,:prob,:sol)',{'id':patternId,'name':patternName,'cont':patternContext,'prob':patternProblem,'sol':patternSolution})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding security pattern ' + patternName
@@ -6183,7 +6407,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     patternStructure = parameters.associations()
     patternRequirements = parameters.requirements()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteSecurityPatternComponents(:pat)',{'pat':patternId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating security pattern ' + patternName
@@ -6214,7 +6439,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addPatternRequirement(self,reqLabel,patternId,reqName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addSecurityPatternRequirement(:reqLbl,:pat,:req)',{'reqLbl':reqLabel,'pat':patternId,'req':reqName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding requirement to pattern id ' + str(patternId) 
@@ -6229,7 +6455,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def addPatternAssetAssociation(self,patternId,headAsset,headAdornment,headNry,headRole,tailRole,tailNry,tailAdornment,tailAsset):
     assocId = self.newId()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addSecurityPatternStructure(:ass,:pat,:hAss,:hAd,:hNry,:hRole,:tRole,:tNry,:tAd,:tAss)',{'ass':assocId,'pat':patternId,'hAss':headAsset,'hAd':headAdornment,'hNry':headNry,'hRole':headRole,'tRole':tailRole,'tNry':tailNry,'tAd':tailAdornment,'tAss':tailAsset})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding structure to pattern id ' + str(patternId) 
@@ -6243,7 +6470,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def patternAssets(self,patternId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call securityPatternAssets(:pat)',{'pat':patternId})
       if (rs.rowcount == -1):
         rs.close()
@@ -6269,7 +6497,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def situatePatternAsset(self,patternId,assetId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call situatePatternAsset(:ass,:pat)',{'ass':assetId,'pat':patternId})
       if (rs.rowcount == -1):
         rs.close()
@@ -6286,7 +6515,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def isCountermeasureAssetGenerated(self,cmId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select isCountermeasureAssetGenerated(:cm)',{'cm':cmId})
       if (rs.rowcount == -1):
         rs.close()
@@ -6305,7 +6535,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def isCountermeasurePatternGenerated(self,cmId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select isCountermeasurePatternGenerated(:cm)',{'cm':cmId})
       if (rs.rowcount == -1):
         rs.close()
@@ -6334,7 +6565,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def exposedCountermeasure(self,envName,assetName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call exposedCountermeasure(:env,:ass)',{'env':envName,'ass':assetName})
       if (rs.rowcount == -1):
         rs.close()
@@ -6359,7 +6591,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateCountermeasureEffectiveness(self,objtId,dimName,cmName,assetName,envName,cmEffectiveness):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateCountermeasureEffectiveness(:obj,:dim,:cm,:ass,:env,:cmEff)',{'obj':objtId,'dim':dimName,'cm':cmName,'ass':assetName,'env':envName,'cmEff':cmEffectiveness})
       if (rs.rowcount == -1):
         rs.close()
@@ -6380,7 +6613,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def countermeasurePatterns(self,cmId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call countermeasurePatterns(:cm)',{'cm':cmId})
       if (rs.rowcount == -1):
         rs.close()
@@ -6401,7 +6635,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteSituatedPattern(self,cmId,patternName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteSituatedPattern(:cm,:pat)',{'cm':cmId,'pat':patternName})
       if (rs.rowcount == -1):
         rs.close()
@@ -6418,7 +6653,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def candidateCountermeasurePatterns(self,cmId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call candidateCountermeasurePatterns(:cm)',{'cm':cmId})
       if (rs.rowcount == -1):
         rs.close()
@@ -6439,7 +6675,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def associateCountermeasureToPattern(self,cmId,patternName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call associateCountermeasureToPattern(:cm,:pat)',{'cm':cmId,'pat':patternName})
       if (rs.rowcount == -1):
         rs.close()
@@ -6456,7 +6693,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def nameCheck(self,objtName,dimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call nameExists(:obj,:dim)',{'obj':objtName,'dim':dimName})
       if (rs.rowcount == -1):
         rs.close()
@@ -6476,7 +6714,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getExternalDocuments(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getExternalDocuments(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining external documents'
@@ -6501,7 +6740,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getDocumentReferences(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getDocumentReferences(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining document references'
@@ -6525,7 +6765,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getExternalDocumentReferences(self,docName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getDocumentReferencesByExternalDocument(:doc)',{'doc':docName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining document references for external document ' + docName
@@ -6549,7 +6790,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getPersonaDocumentReferences(self,personaName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getPersonaDocumentReferences(:pers)',{'pers':personaName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining document references for persona ' + personaName
@@ -6569,7 +6811,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getPersonaConceptReferences(self,personaName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getPersonaConceptReferences(:pers)',{'pers':personaName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining document references for persona ' + personaName
@@ -6590,7 +6833,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getPersonaExternalDocuments(self,personaName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getPersonaExternalDocuments(:pers)',{'pers':personaName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining external documents for persona ' + personaName
@@ -6612,7 +6856,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getPersonaCharacteristics(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getPersonaCharacteristics(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining persona characteristics'
@@ -6643,7 +6888,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def characteristicReferences(self,pcId,spName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call ' + spName + '(:pc)',{'pc':pcId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining characteristic references'
@@ -6694,7 +6940,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     docAuthors = self.conn.connection().connection.escape_string(parameters.authors())
     docDesc = self.conn.connection().connection.escape_string(parameters.description())
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addExternalDocument(:id,:name,:vers,:date,:auth,:desc)',{'id':docId,'name':docName.encode('utf-8'),'vers':docVersion.encode('utf-8'),'date':docDate.encode('utf-8'),'auth':docAuthors.encode('utf-8'),'desc':docDesc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding external document ' + docName
@@ -6717,7 +6964,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     docAuthors = self.conn.connection().connection.escape_string(parameters.authors())
     docDesc = self.conn.connection().connection.escape_string(parameters.description())
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateExternalDocument(:id,:name,:vers,:date,:auth,:desc)',{'id':docId,'name':docName.encode('utf-8'),'vers':docVersion.encode('utf-8'),'date':docDate.encode('utf-8'),'auth':docAuthors.encode('utf-8'),'desc':docDesc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating external document ' + docName
@@ -6737,7 +6985,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     cName = parameters.contributor()
     refExc = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addDocumentReference(:rId,:rName,:dName,:cName,:rExec)',{'rId':refId,'rName':refName.encode('utf-8'),'dName':docName.encode('utf-8'),'cName':cName.encode('utf-8'),'rExec':refExc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding document reference ' + refName
@@ -6758,7 +7007,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     cName = parameters.contributor()
     refExc = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateDocumentReference(:rId,:rName,:dName,:cName,:rExec)',{'rId':refId,'rName':refName.encode('utf-8'),'dName':docName.encode('utf-8'),'cName':cName.encode('utf-8'),'rExec':refExc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating document reference ' + refName
@@ -6781,7 +7031,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     warrant = parameters.warrant() 
     rebuttal = parameters.rebuttal()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addPersonaCharacteristic(:pc,:pers,:qual,:bVar,:cDesc)',{'pc':pcId,'pers':personaName,'qual':qualName,'bVar':bVar,'cDesc':cDesc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding persona characteristic ' + pDesc
@@ -6807,7 +7058,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     warrant = parameters.warrant() 
     rebuttal = parameters.rebuttal()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deletePersonaCharacteristicComponents(:pers)',{'pers':pcId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating persona characteristic ' + cDesc
@@ -6827,7 +7079,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getPersonaBehaviouralCharacteristics(self,pName,bvName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call personaBehaviouralCharacteristics(:pName,:bvName)',{'pName':pName,'bvName':bvName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining persona behavioural characteristics'
@@ -6855,7 +7108,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getConceptReferences(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getConceptReferences(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining concept references'
@@ -6884,7 +7138,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     objtName = parameters.objectName()
     cDesc = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addConceptReference(:rId,:rName,:dName,:obj,:cDesc)',{'rId':refId,'rName':refName,'dName':dimName,'obj':objtName,'cDesc':cDesc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding concept reference ' + refName
@@ -6905,7 +7160,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     objtName = parameters.objectName()
     cDesc = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateConceptReference(:rId,:rName,:dName,:obj,:cDesc)',{'rId':refId,'rName':refName,'dName':dimName,'obj':objtName,'cDesc':cDesc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating concept reference ' + refName
@@ -6921,7 +7177,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteConceptReference(self,refId,dimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call delete_concept_reference(:ref,:dim)',{'ref':refId,'dim':dimName})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting concept reference id ' + str(refId)
@@ -6950,7 +7207,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addPersonaCharacteristicReference(self,pcId,refName,crTypeName,refDesc,dimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addPersonaCharacteristicReference(:pc,:ref,:cr,:refD,:dim)',{'pc':pcId,'ref':refName,'cr':crTypeName,'refD':refDesc.encode('utf-8'),'dim':dimName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding ' + crTypeName + ' ' + refName
@@ -6964,7 +7222,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def referenceDescription(self,dimName,refName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call referenceDescription(:dim,:ref)',{'dim':dimName,'ref':refName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding ' + dimName + ' ' + refName
@@ -6981,7 +7240,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   
   def documentReferenceNames(self,docName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call documentReferenceNames(:doc)',{'doc':docName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting references for artifact ' + docName
@@ -7000,7 +7260,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def referenceUse(self,refName,dimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call referenceUse(:ref,:dim)',{'ref':refName,'dim':dimName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting characteristics associated with ' + dimName + ' ' + refName
@@ -7018,7 +7279,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def characteristicBacking(self,pcId,spName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       if (spName == 'characteristicReferences'):
         rs = session.execute('call characteristicBacking(:pc)',{'pc':pcId})
       else:
@@ -7039,7 +7301,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def assumptionPersonaModel(self,personaName = '',bvName = '',pcName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call assumptionPersonaModel(:pers,:bv,:pc)',{'pers':personaName,'bv':bvName,'pc':pcName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining assumption persona model'
@@ -7084,7 +7347,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getArgReference(self,atName,constraintName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call get' + atName + '(:const)',{'const':constraintName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining ' + atName + ':' + constraintName
@@ -7132,7 +7396,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def addDirectoryEntry(self,dLabel,dName,dDesc,dTypeId,dRef,dimName):
     try:
       dimName = string.upper(dimName[0]) + dimName[1:]
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call add' + dimName + 'DirectoryEntry(:lbl,:name,:desc,:type,:ref)',{'lbl':dLabel,'name':dName,'desc':dDesc.encode('utf-8'),'type':dTypeId,'ref':dRef})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding ' + dimName + ' directory entry ' + dLabel
@@ -7148,7 +7413,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def lastRequirementLabel(self,assetName):
     try: 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select lastRequirementLabel(:ass)',{'ass':assetName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting last requirement label for asset ',assetName
@@ -7165,7 +7431,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getUseCases(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getUseCases(:const)',{'const':constraintId});
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining usecases'
@@ -7205,7 +7472,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def useCaseRoles(self,ucName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call useCaseRoles(:name)',{'name':ucName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting actors associated with use case ' + ucName
@@ -7223,7 +7491,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def useCaseConditions(self,ucId,envId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call useCaseConditions(:uc,:env)',{'uc':ucId,'env':envId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting conditions associated with use case id ' + str(ucId)
@@ -7241,7 +7510,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def useCaseSteps(self,ucId,envId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call useCaseSteps(:uc,:env)',{'uc':ucId,'env':envId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting steps associated with use case id ' + str(ucId)
@@ -7273,7 +7543,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def useCaseStepExceptions(self,ucId,envId,stepNo):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call useCaseStepExceptions(:uc,:env,:step)',{'uc':ucId,'env':envId,'step':stepNo})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting step exceptions associated with use case id ' + str(ucId)
@@ -7292,7 +7563,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def useCaseStepTags(self,ucId,envId,stepNo):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call useCaseStepTags(:uc,:env,:step)',{'uc':ucId,'env':envId,'step':stepNo})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting step tags associated with use case id ' + str(ucId)
@@ -7317,7 +7589,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tags = parameters.tags()
     try:
       ucId = self.newId()
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addUseCase(:id,:name,:auth,:code,:desc)',{'id':ucId,'name':ucName,'auth':ucAuth,'code':ucCode,'desc':ucDesc})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new use case ' + ucName
@@ -7342,7 +7615,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addUseCaseRole(self,ucId,actor):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addUseCaseRole(:id,:act)',{'id':ucId,'act':actor}) 
       if (rs.rowcount == -1):
         exceptionText = 'Error associating actor ' + actor + ' with use case id ' + str(ucId)
@@ -7356,7 +7630,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addUseCaseConditions(self,ucId,envName,preCond,postCond):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addUseCaseConditions(:id,:env,:pre,:post)',{'id':ucId,'env':envName,'pre':preCond,'post':postCond}) 
       if (rs.rowcount == -1):
         exceptionText = 'Error adding conditions to use case id ' + str(ucId)
@@ -7375,7 +7650,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addUseCaseStep(self,ucId,envName,stepNo,step):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addUseCaseStep(:id,:env,:step,:text,:synopsis,:actor,:type)',{'id':ucId,'env':envName,'step':stepNo,'text':step.text(),'synopsis':step.synopsis(),'actor':step.actor(),'type':step.actorType()}) 
       if (rs.rowcount == -1):
         exceptionText = 'Error adding step: ' + step.text() + ' to use case id ' + str(ucId)
@@ -7394,7 +7670,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addUseCaseStepTag(self,ucId,envName,stepNo,tag):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addUseCaseStepTag(:id,:env,:step,:tag)',{'id':ucId,'env':envName,'step':stepNo,'tag':tag})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding tag ' + tag + ' to step ' + str(stepNo) + ' in use case id ' + str(ucId)
@@ -7408,7 +7685,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addUseCaseStepException(self,ucId,envName,stepNo,exName,dimType,dimName,catName,exDesc):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addUseCaseStepException(:uc,:env,:step,:ex,:dType,:dName,:cName,:desc)',{'uc':ucId,'env':envName,'step':stepNo,'ex':exName,'dType':dimType,'dName':dimName,'cName':catName,'desc':exDesc})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding step exception ' + exName
@@ -7429,7 +7707,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     ucDesc = parameters.description()
     tags = parameters.tags()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteUseCaseComponents(:uc)',{'uc':ucId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating use case ' + ucName
@@ -7459,7 +7738,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskModel(self,environmentName,riskName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskModel(:risk,:env)',{'risk':riskName,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting risk model'
@@ -7483,7 +7763,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def isRisk(self,candidateRiskName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select is_risk(:cand)',{'cand':candidateRiskName})
       if (rs.rowcount == -1):
         exceptionText = 'Error checking if ' + candidateRiskName + ' is a risk'
@@ -7501,7 +7782,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def textualArgumentationModel(self,personaName,bvType):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call assumptionPersonaModel_textual(:pers,:type)',{'pers':personaName,'type':bvType})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting ' + bvType + ' argumentation model for ' + personaName
@@ -7520,7 +7802,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskAnalysisToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskAnalysisToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting risk analysis artifacts to XML'
@@ -7545,7 +7828,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalsToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call goalsToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting goals to XML'
@@ -7567,7 +7851,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def usabilityToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call usabilityToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting usability data to XML'
@@ -7590,7 +7875,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def misusabilityToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call misusabilityToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting usability data to XML'
@@ -7609,7 +7895,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def associationsToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call associationsToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting association data to XML'
@@ -7630,7 +7917,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def projectToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call projectToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting project data to XML'
@@ -7647,7 +7935,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def architecturalPatternToXml(self,apName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call architecturalPatternToXml(:name)',{'name':apName})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting architectural pattern ' + apName + ' to XML'
@@ -7664,7 +7953,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getTaskCharacteristics(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getTaskCharacteristics(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining task characteristics'
@@ -7701,7 +7991,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     warrant = parameters.warrant()
     rebuttal = parameters.rebuttal()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTaskCharacteristic(:id,:task,:qual,:desc)',{'id':tcId,'task':taskName,'qual':qualName,'desc':cDesc})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding task characteristic ' + cDesc
@@ -7729,7 +8020,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTaskCharacteristicReference(self,tcId,refName,crTypeName,refDesc,dimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTaskCharacteristicReference(:id,:ref,:type,:desc,:dim)',{'id':tcId,'ref':refName,'type':crTypeName,'desc':refDesc,'dim':dimName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding ' + crTypeName + ' ' + refName
@@ -7751,7 +8043,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     warrant = parameters.warrant() 
     rebuttal = parameters.rebuttal()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteTaskCharacteristicComponents(:task)',{'task':tcId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating task characteristic ' + cDesc
@@ -7774,7 +8067,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def assumptionTaskModel(self,taskName = '',tcName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call assumptionTaskModel(:task,:tc)',{'task':taskName,'tc':tcName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining assumption task model'
@@ -7799,7 +8093,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getTaskSpecificCharacteristics(self,tName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call taskSpecificCharacteristics(:task)',{'task':tName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining task specific characteristics'
@@ -7827,7 +8122,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def prettyPrintGoals(self,categoryName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call goalsPrettyPrint(:category)',{'category':categoryName})
       if (rs.rowcount == -1):
         exceptionText = 'Error pretty printing goals'
@@ -7844,7 +8140,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def searchModel(self,inTxt,opts):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
 
       psFlag = opts[0]
       envFlag = opts[1]
@@ -7890,7 +8187,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getExternalDocumentReferencesByExternalDocument(self,edName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getExternalDocumentReferences(:name)',{'name':edName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining document references for external document ' + edName
@@ -7910,7 +8208,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def dimensionNameByShortCode(self,scName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call dimensionNameByShortCode(:shortCode)',{'shortCode':scName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining dimension associated with short code ' + scName
@@ -7927,7 +8226,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def misuseCaseRiskComponents(self,mcName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call misuseCaseRiskComponents(:misuse)',{'misuse':mcName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining risk components associated with Misuse Case ' + mcName
@@ -7943,7 +8243,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def personaToXml(self,pName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call personaToXml(:persona)',{'persona':pName})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting persona to XML'
@@ -7963,7 +8264,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def defaultEnvironment(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select defaultEnvironment()')
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining default environment'
@@ -7979,7 +8281,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def environmentTensions(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call environmentTensions(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting value tensions for environment ' + envName
@@ -8012,7 +8315,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getReferenceSynopsis(self,refName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getReferenceSynopsis(:ref)',{'ref':refName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting synopsis for reference ' + refName
@@ -8034,7 +8338,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getReferenceContribution(self,charName,refName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getReferenceContribution(:ref,:char)',{'ref':refName,'char':charName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting contribution for reference ' + refName + ' and characteristic ' + charName
@@ -8059,7 +8364,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     meName = rc.meansEnd()
     contName = rc.contribution()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addReferenceContribution(:rs,:cs,:me,:cont)',{'rs':rsName,'cs':csName,'me':meName,'cont':contName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding contribution for reference synopsis ' + rsName + ' and contribution synopsis ' + csName
@@ -8078,7 +8384,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     meName = rc.meansEnd()
     contName = rc.contribution()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateReferenceContribution(:rs,:cs,:me,:cont)',{'rs':rsName,'cs':csName,'me':meName,'cont':contName})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating contribution for reference synopsis ' + rsName + ' and contribution synopsis ' + csName
@@ -8099,7 +8406,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     atName = rs.actorType()
     actorName = rs.actor()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addReferenceSynopsis(:rsId,:ref,:rs,:dim,:atName,:actName)',{'rsId':rsId,'ref':refName,'rs':rsName,'dim':rsDim,'atName':atName,'actName':actorName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding synopsis ' + rsName
@@ -8121,7 +8429,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     atName = rs.actorType()
     actorName = rs.actor()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateReferenceSynopsis(:rsId,:ref,:rs,:dim,:atName,:actName)',{'rsId':rsId,'ref':refName,'rs':rsName,'dim':rsDim,'atName':atName,'actName':actorName})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating synopsis ' + rsName
@@ -8141,7 +8450,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     atName = cs.actorType()
     actorName = cs.actor()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addCharacteristicSynopsis(:cName,:csName,:csDim,:atName,:actName)',{'cName':cName,'csName':csName,'csDim':csDim,'atName':atName,'actName':actorName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding synopsis ' + csName
@@ -8161,7 +8471,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     atName = cs.actorType()
     actorName = cs.actor()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateCharacteristicSynopsis(:cName,:csName,:csDim,:atName,:actName)',{'cName':cName,'csName':csName,'csDim':csDim,'atName':atName,'actName':actorName})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating synopsis ' + csName
@@ -8176,7 +8487,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def referenceCharacteristic(self,refName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call referenceCharacteristic(:ref)',{'ref':refName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting reference associated with characteristic ' + refName
@@ -8195,7 +8507,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getCharacteristicSynopsis(self,cName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getCharacteristicSynopsis(:characteristic)',{'characteristic':cName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting synopsis for characteristic ' + cName
@@ -8220,7 +8533,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def hasCharacteristicSynopsis(self,charName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select hasCharacteristicSynopsis(:characteristic)',{'characteristic':charName})
       if (rs.rowcount == -1):
         exceptionText = 'Error finding synopsis for characteristic ' + charName
@@ -8237,7 +8551,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def hasReferenceSynopsis(self,refName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select hasReferenceSynopsis(:ref)',{'ref':refName})
       if (rs.rowcount == -1):
         exceptionText = 'Error finding synopsis for reference ' + refName
@@ -8259,7 +8574,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     atName = cs.actorType()
     actorName = cs.actor()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addUseCaseSynopsis(:cName,:csName,:csDim,:atName,:actName)',{'cName':cName,'csName':csName,'csDim':csDim,'atName':atName,'actName':actorName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding synopsis ' + csName
@@ -8274,7 +8590,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getUseCaseContributions(self,ucName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getUseCaseContributions(:useCase)',{'useCase':ucName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting contributions for use case ' + ucName
@@ -8302,7 +8619,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     meName = rc.meansEnd()
     contName = rc.contribution()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addUseCaseContribution(:useCase,:csName,:meName,:cont)',{'useCase':ucName,'csName':csName,'meName':meName,'cont':contName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding contribution for use case ' + ucName
@@ -8321,7 +8639,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     meName = rc.meansEnd()
     contName = rc.contribution()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateUseCaseContribution(:useCase,:csName,:meName,:cont)',{'useCase':ucName,'csName':csName,'meName':meName,'cont':contName})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating contribution for use case ' + ucName
@@ -8337,7 +8656,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def pcToGrl(self,pNames,tNames,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call pcToGrl(":pNames","%:tNames",:env)',{'pNames':pNames,'tNames':tNames,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting persona and task to GRL'
@@ -8353,7 +8673,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getEnvironmentGoals(self,goalName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getEnvironmentGoals(:goal,:env)',{'goal':goalName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goals'
@@ -8389,7 +8710,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     goalIssue = envProps.issue()
     
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateEnvironmentGoal(:id,:env,:name,:orig,:def,:cat,:pri,:fc,:issue)',{'id':g.id(),'env':envName,'name':g.name(),'orig':g.originator(),'def':goalDef,'cat':goalCat,'pri':goalPri,'fc':goalFc,'issue':goalIssue})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating goal ' + str(g.id())
@@ -8404,7 +8726,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
  
   def getSubGoalNames(self,goalName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call subGoalNames(:goal,:env)',{'goal':goalName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goals for environment ' + envName + ' and subgoal ' + goalName
@@ -8424,7 +8747,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def dependentLabels(self,goalName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call dependentLabels(:goal,:env)',{'goal':goalName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining dependent labels for ' + goalName + ' in environment ' + envName
@@ -8444,7 +8768,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalEnvironments(self,goalName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call goalEnvironments(:goal)',{'goal':goalName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining environments for goal ' + goalName
@@ -8464,7 +8789,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def obstacleEnvironments(self,obsName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call obstacleEnvironments(:obs)',{'obs':obsName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining environments for obstacle ' + obsName
@@ -8484,7 +8810,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getSubObstacleNames(self,obsName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call subObstacleNames(:obs,:env)',{'obs':obsName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining obstacles for environment ' + envName + ' and sub-obstacle ' + obsName
@@ -8504,7 +8831,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getEnvironmentObstacles(self,obsName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getEnvironmentObstacles(:obs,:env)',{'obs':obsName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining obstacles'
@@ -8537,7 +8865,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     obsCat = envProps.category()
     
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateEnvironmentObstacle(:id,:env,:name,:orig,:def,:cat)',{'id':o.id(),'env':envName,'name':o.name(),'orig':o.originator(),'def':obsDef,'cat':obsCat})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating obstacle ' + str(g.id())
@@ -8552,7 +8881,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def relabelGoals(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call relabelGoals(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error relabelling goals'
@@ -8567,7 +8897,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def relabelObstacles(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call relabelObstacles(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error relabelling obstacles'
@@ -8582,7 +8913,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def obstacleLabel(self,goalId,environmentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select obstacle_label(:goal,:env)',{'goal':goalId,'env':environmentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -8601,7 +8933,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getLabelledGoals(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getEnvironmentGoals(:g,:env)',{'g':'','env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining labelled goals'
@@ -8632,7 +8965,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def redmineGoals(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call redmineGoals(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining redmine goals'
@@ -8681,7 +9015,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def redmineUseCases(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call usecasesToRedmine()')
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting usecases to Redmine'
@@ -8700,7 +9035,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def redmineScenarios(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call redmineScenarios()')
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting scenarios to Redmine'
@@ -8722,7 +9058,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def redmineArchitecture(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call redmineArchitecture()')
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting architecture to Redmine'
@@ -8744,7 +9081,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def redmineAttackPatterns(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call redmineAttackPatterns()')
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting attack patterns Redmine'
@@ -8767,7 +9105,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def tvTypesToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call tvTypesToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting threat and vulnerability types to XML'
@@ -8786,7 +9125,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def domainValuesToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call domainValuesToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting domain values to XML'
@@ -8838,7 +9178,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def conceptMapModel(self,envName,reqName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       if reqName == '':
         rs = session.execute('call conceptMapModel(:env)',{'env':envName})
       else:
@@ -8868,7 +9209,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def traceabilityScore(self,reqName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select traceabilityScore(:req)',{'req':reqName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining traceability score for ' + reqName
@@ -8886,7 +9228,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRedmineRequirements(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select name,originator,priority,comments,description,environment_code,environment from redmine_requirement order by 1');
       if (rs.rowcount == -1):
         exceptionText = 'Error getting requirements'
@@ -8922,7 +9265,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRequirementScenarios(self,reqName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call requirementScenarios(:req)',{'req':reqName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting scenarios associated with requirement ' + reqName
@@ -8943,7 +9287,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRequirementUseCases(self,reqName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call requirementUseCases(:req)',{'req':reqName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting use cases associated with requirement ' + reqName
@@ -8964,7 +9309,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getRequirementBacklog(self,reqName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call requirementBacklog(:req)',{'req':reqName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting backlog items associated with requirement ' + reqName
@@ -8985,7 +9331,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def environmentRequirements(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call requirementNames(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining requirements for environment ' + envName
@@ -9005,7 +9352,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTag(self,tagObjt,tagName,tagDim):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTag(:obj,:name,:dim)',{'obj':tagObjt,'name':tagName,'dim':tagDim})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding tag ' + tagName + ' to ' + tagDim + ' ' + tagObjt
@@ -9019,7 +9367,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteTags(self,tagObjt,tagDim):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteTags(:obj,:dim)',{'obj':tagObjt,'dim':tagDim})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting tags from ' + tagDim + ' ' + tagObjt
@@ -9043,7 +9392,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getTags(self,dimObjt,dimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getTags(:obj,:name)',{'obj':dimObjt,'name':dimName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting tags for ' + dimName + ' ' + dimObjt
@@ -9066,7 +9416,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentView(self,cvName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentViewInterfaces(:cv)',{'cv':cvName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting component view interfaces'
@@ -9086,7 +9437,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentViewConnectors(self,cvName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentViewConnectors(:cv)',{'cv':cvName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting component view connectors'
@@ -9105,7 +9457,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addComponentToView(self,cId,cvId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addComponentToView(:cId,:cvId)',{'cId':cId,'cvId':cvId})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding component to view '
@@ -9129,7 +9482,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     assocs = parameters.associations()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addComponent(:id,:name,:desc)',{'id':componentId,'name':componentName,'desc':componentDesc})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding component ' + componentName
@@ -9164,7 +9518,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     assocs = parameters.associations()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteComponentComponents(:comp)',{'comp':componentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating component ' + componentName
@@ -9200,7 +9555,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addComponentInterface(self,componentId,ifName,ifType,arName,pName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addComponentInterface(:compId,:ifName,:ifType,:arName,:pName)',{'compId':componentId,'ifName':ifName,'ifType':ifType,'arName':arName,'pName':pName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding interface ' + ifName + ' to  component ' + str(componentId)
@@ -9227,7 +9583,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     arName = parameters.accessRight()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addConnector(:connId,:cvName,:cName,:fName,fRole,fIf,tName,tIf,tRole,conAsset,pName,arName)',{'connId':connId,'cvName':cvName,'cName':cName,'fName':fromName,'fRole':fromRole,'fIf':fromIf,'tName':toName,'tIf':toIf,'tRole':toRole,'conAsset':conAsset,'pName':pName,'arName':arName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding connector ' + cName
@@ -9242,7 +9599,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getInterfaces(self,dimObjt,dimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getInterfaces(:obj,:name)',{'obj':dimObjt,'name':dimName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting interfaces for ' + dimName + ' ' + dimObjt
@@ -9279,7 +9637,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deleteInterfaces(self,ifName,ifDim):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteInterfaces(:name,:dim)',{'name':ifName,'dim':ifDim})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting interfaces from ' + ifDim + ' ' + ifName
@@ -9293,7 +9652,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addInterface(self,ifObjt,ifName,ifType,arName,pName,ifDim):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addInterface(:iObj,:iName,:iType,:aName,:pName,:iDim)',{'iObj':ifObjt,'iName':ifName,'iType':ifType,'aName':arName,'pName':pName,'iDim':ifDim})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding interface ' + ifName + ' to ' + ifDim + ' ' + ifObjt
@@ -9312,7 +9672,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def addComponentAssetAssociation(self,componentId,headAsset,headAdornment,headNav,headNry,headRole,tailRole,tailNry,tailNav,tailAdornment,tailAsset):
     assocId = self.newId()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addComponentStructure(:aId,:cId,:hAss,:hAd,:hNav,:hNry,:hRole,:tRole,:tNry,:tNav,:tAd,:tAss)',{'aId':assocId,'cId':componentId,'hAss':headAsset,'hAd':headAdornment,'hNav':headNav,'hNry':headNry,'hRole':headRole,'tRole':tailRole,'tNry':tailNry,'tNav':tailNav,'tAd':tailAdornment,'tAss':tailAsset})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding structure to component id ' + str(componentId) 
@@ -9326,7 +9687,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentStructure(self,componentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getComponentStructure(:comp)',{'comp':componentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -9351,7 +9713,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addComponentRequirement(self,reqLabel,componentId,reqName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addComponentRequirement(:reqLbl,:comp,:req)',{'reqLbl':reqLabel,'comp':componentId,'req':reqName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding requirement to component id ' + str(componentId) 
@@ -9365,7 +9728,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getComponentViews(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getComponentView(:cons)',{'cons':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining component models'
@@ -9406,7 +9770,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentRequirements(self,componentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getComponentRequirements(:comp)',{'comp':componentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -9427,7 +9792,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentInterfaces(self,componentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentInterfaces(:comp)',{'comp':componentId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting component interfaces'
@@ -9464,7 +9830,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     cvCons = parameters.connectors()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addComponentView(:id,:name,:syn)',{'id':cvId,'name':cvName,'syn':cvSyn})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new component view ' + cvName
@@ -9520,7 +9887,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     cvCons = parameters.connectors()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteComponentViewComponents(:id)',{'id':cvId})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting components for component view ' + cvName
@@ -9553,7 +9921,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentViewComponents(self,cvId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getComponents(:id)',{'id':cvId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting components'
@@ -9575,7 +9944,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentViewWeaknesses(self,cvName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentViewWeaknesses(:cv,:env)',{'cv':cvName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting weaknesses associated with the ' + cvName + ' component view'
@@ -9618,7 +9988,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentAssets(self,cvName,reqName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentAssets(:cv,:req)',{'cv':cvName,'req':reqName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting assets associated with the ' + cvName + ' component view'
@@ -9637,7 +10008,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentGoalAssets(self,cvName,goalName = ''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentGoalAssets(:cv,:goal)',{'cv':cvName,'goal':goalName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting assets associated with the ' + cvName + ' component view'
@@ -9656,7 +10028,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def existingObject(self,objtName,dimName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       existingSql = 'call existing_object(:obj,:dim)'
       if (dimName == 'persona_characteristic' or dimName == 'task_characteristic'):
         existingSql = 'call existing_characteristic(:obj,:dim)'
@@ -9701,7 +10074,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def situateComponentAsset(self,componentName,assetId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call situateComponentAsset(:ass,:comp)',{'ass':assetId,'comp':componentName})
       if (rs.rowcount == -1):
         rs.close()
@@ -9718,7 +10092,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addComponentViewTargets(self,target,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       for componentName in target.components():
         rs = session.execute('call addComponentTarget(:comp,:asset,:name,:effectiveness,:rationale,:env)',{'comp':componentName,'asset':target.asset(),'name':target.name(),'effectiveness':target.effectiveness(),'rationale':target.rationale(),'env':envName})
         if (rs.rowcount == -1):
@@ -9736,7 +10111,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def assetComponents(self,assetName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call assetComponents(:ass,:env)',{'ass':assetName,'env':envName})
       if (rs.rowcount == -1):
         rs.close()
@@ -9764,7 +10140,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     reqRat = parameters.rationale()
     reqFC = parameters.fitCriterion()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTemplateRequirement(:id,:name,:asset,:type,:desc,:rat,:fc)',{'id':reqId,'name':reqName,'asset':reqAsset,'type':reqType,'desc':reqDesc,'rat':reqRat,'fc':reqFC})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding template requirement ' + reqName
@@ -9786,7 +10163,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     reqRat = parameters.rationale()
     reqFC = parameters.fitCriterion()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateTemplateRequirement(:id,:name,:asset,:type,:desc,:rat,:fc)',{'id':reqId,'name':reqName,'asset':reqAsset,'type':reqType,'desc':reqDesc,'rat':reqRat,'fc':reqFC})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating template requirement ' + reqName
@@ -9800,7 +10178,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getTemplateRequirements(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getTemplateRequirements(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining template requirements'
@@ -9832,7 +10211,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentViewRequirements(self,cvName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentViewRequirements(:cv)',{'cv':cvName})
       if (rs.rowcount == -1):
         rs.close()
@@ -9853,7 +10233,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentViewGoals(self,cvName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentViewGoals(:cv)',{'cv':cvName})
       if (rs.rowcount == -1):
         rs.close()
@@ -9874,7 +10255,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def situateComponentViewRequirements(self,cvName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call situateComponentViewRequirements(:cv)',{'cv':cvName})
       if (rs.rowcount == -1):
         rs.close()
@@ -9891,7 +10273,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getComponents(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getAllComponents(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining assets'
@@ -9925,7 +10308,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def personasImpact(self,cvName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call personasImpact(:cv,:env)',{'cv':cvName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting personas impact'
@@ -9944,7 +10328,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def personaImpactRationale(self,cvName,personaName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call personaImpactRationale(:cv,:pers,:env)',{'cv':cvName,'pers':personaName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting personas impact'
@@ -9978,7 +10363,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def taskUseCases(self,taskName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call taskUseCases(:task)',{'task':taskName})
       rowCount = rs.rowcount
       ucs = []
@@ -9999,7 +10385,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def usecaseComponents(self,ucName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call usecaseComponents(:useCase)',{'useCase':ucName})
       rowCount = rs.rowcount
       coms = []
@@ -10020,7 +10407,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def attackSurfaceMetric(self,cvName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call attackSurfaceMetric(:cv)',{'cv':cvName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting attack surface metric for ' + cvName
@@ -10039,7 +10427,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentAssetModel(self,componentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentClassModel(:comp)',{'comp':componentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining component class associations'
@@ -10076,7 +10465,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getInternalDocuments(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getInternalDocuments(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining internal documents'
@@ -10116,7 +10506,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     docCodes = parameters.codes()
     docMemos = parameters.memos()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addInternalDocument(:id,:name,:desc,:cont)',{'id':docId,'name':docName.encode('utf-8'),'desc':docDesc.encode('utf-8'),'cont':docContent.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding internal document ' + docName
@@ -10141,7 +10532,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     docCodes = parameters.codes()
     docMemos = parameters.memos()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteInternalDocumentComponents(:id)',{'id':docId})
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting components of ' + docName
@@ -10163,7 +10555,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getCodes(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getCodes(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining codes'
@@ -10197,7 +10590,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     incCriteria = parameters.inclusionCriteria()
     codeEg  = parameters.example()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addCode(:id,:name,:type,:desc,:crit,:eg)',{'id':codeId,'name':codeName.encode('utf-8'),'type':codeType,'desc':codeDesc.encode('utf-8'),'crit':incCriteria.encode('utf-8'),'eg':codeEg.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding code ' + codeName
@@ -10220,7 +10614,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     incCriteria = parameters.inclusionCriteria()
     codeEg  = parameters.example()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateCode(:id,:name,:type,:desc,:crit,:eg)',{'id':codeId,'name':codeName.encode('utf-8'),'type':codeType,'desc':codeDesc.encode('utf-8'),'crit':incCriteria.encode('utf-8'),'eg':codeEg.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating code ' + codeName
@@ -10235,7 +10630,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def documentCodes(self,docName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call documentCodes(:name)',{'name':docName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting codes for ' + docName
@@ -10262,7 +10658,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addDocumentCode(self,docName,docCode,startIdx,endIdx,codeLabel='',codeSynopsis=''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addDocumentCode(:name,:code,:sIdx,:eIdx,:lbl,:syn)',{'name':docName,'code':docCode,'sIdx':startIdx,'eIdx':endIdx,'lbl':codeLabel,'syn':codeSynopsis})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding code ' + docCode + ' to ' + docName
@@ -10276,7 +10673,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def artifactCodes(self,artName,artType,sectName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call artifactCodes(:art,:type,:sect)',{'art':artName,'type':artType,'sect':sectName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting codes for ' + artType + ' ' + artName
@@ -10319,7 +10717,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addArtifactCode(self,artName,artType,sectName,docCode,startIdx,endIdx):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addArtifactCode(:art,:type,:sect,:code,:sIdx,:eIdx)',{'art':artName,'type':artType,'sect':sectName,'code':docCode,'sIdx':startIdx,'eIdx':endIdx})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding code ' + docCode + ' to ' + artType + ' ' + artName
@@ -10351,7 +10750,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def artifactEnvironmentCodes(self,artName,envName,artType,sectName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call artifactEnvironmentCodes(:art,:env,:type,:sect)',{'art':artName,'env':envName,'type':artType,'sect':sectName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting codes for ' + artType + ' ' + artName + ' in environment ' + envName
@@ -10378,7 +10778,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addArtifactEnvironmentCode(self,artName,envName,artType,sectName,docCode,startIdx,endIdx):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addArtifactEnvironmentCode(:art,:env,:type,:sect,:code,:sIdx,:eIdx)',{'art':artName,'env':envName,'type':artType,'sect':sectName,'code':docCode,'sIdx':startIdx,'eIdx':endIdx})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding code ' + docCode + ' to ' + artType + ' ' + artName + ' in environment ' + envName
@@ -10392,7 +10793,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def personaCodeNetwork(self,personaName,fromCode='',toCode=''):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call artifactCodeNetwork(:pers,:a,:fCode,:tCode)',{'pers':personaName,'a':'persona','fCode':fromCode,'tCode':toCode})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting code network for persona ' + personaName
@@ -10416,7 +10818,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addCodeRelationship(self,personaName,fromName,toName,rshipType):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addArtifactCodeNetwork(:pers,:a,:fName,:tName,:type)',{'pers':personaName,'a':'persona','fName':fromName,'tName':toName,'type':rshipType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding ' + rshipType + ' to ' + personaName + ' code network'
@@ -10431,7 +10834,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateCodeNetwork(self,personaName,rships):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteArtifactCodeNetwork(:pers,:a)',{'pers':personaName,'a':'persona'})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating code network for ' + personaName
@@ -10448,7 +10852,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getImpliedProcesses(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getImpliedProcesses(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining implied processes'
@@ -10481,7 +10886,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def impliedProcessNetwork(self,ipName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call impliedProcessNetwork(:name)',{'name':ipName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining implied process network ' + ipName
@@ -10513,7 +10919,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       ipSpec = parameters.specification()
       chs = parameters.channels()
 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addImpliedProcess(:id,:name,:desc,:proc,:spec)',{'id':ipId,'name':ipName,'desc':ipDesc.encode('utf-8'),'proc':pName,'spec':ipSpec.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding implied process ' + ipName
@@ -10539,7 +10946,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       ipSpec = parameters.specification()
       chs = parameters.channels()
 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteImpliedProcessComponents(:id)',{'id':ipId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating implied process ' + ipName
@@ -10565,7 +10973,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addImpliedProcessNetworkRelationship(self,ipId,personaName,fromName,toName,rType):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addImpliedProcessNetworkRelationship(:id,:pers,:fName,:tName,:type)',{'id':ipId,'pers':personaName,'fName':fromName,'tName':toName,'type':rType})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating implied process '
@@ -10582,7 +10991,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addStepSynopsis(self,ucName,envName,stepNo,synName,aType,aName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addStepSynopsis(:uc,:env,:step,:syn,:aName,:aType)',{'uc':ucName,'env':envName,'step':stepNo,'syn':synName,'aName':aName,'aType':aType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding step synopsis ' + synName
@@ -10596,7 +11006,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def directoryEntry(self,objtName,dType):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call directoryEntry(:obj,:dir)',{'obj':objtName,'dir':dType})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting details for ' + objtName + ' from ' + dType + ' directory'
@@ -10615,7 +11026,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getTemplateGoals(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getTemplateGoals(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining template requirements'
@@ -10650,7 +11062,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentViewGoals(self,cvName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentViewGoals(:cv)',{'cv':cvName})
       if (rs.rowcount == -1):
         rs.close()
@@ -10671,7 +11084,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def situateComponentViewGoals(self,cvName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call situateComponentViewGoals(:cv,:env)',{'cv':cvName,'env':envName})
       if (rs.rowcount == -1):
         rs.close()
@@ -10688,7 +11102,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def situateComponentViewGoalAssociations(self,cvName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call situateComponentViewGoalAssociations(:cv,:env)',{'cv':cvName,'env':envName})
       if (rs.rowcount == -1):
         rs.close()
@@ -10705,7 +11120,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def templateGoalConcerns(self,tgId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call templateGoalConcerns(:tg)',{'tg':tgId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining concerns for template goal id ' + str(tgId)
@@ -10731,7 +11147,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     goalConcerns = parameters.concerns()
     goalResponsibilities = parameters.responsibilities()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addTemplateGoal(:id,:name,:def,:rat)',{'id':goalId,'name':goalName,'def':goalDef,'rat':goalRat})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding template goal ' + goalName
@@ -10754,7 +11171,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     goalConcerns = parameters.concerns()
     goalResponsibilities = parameters.responsibilities()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deleteTemplateGoalComponents(:id)',{'id':goalId})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating goal ' + goalName
@@ -10780,7 +11198,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTemplateGoalConcern(self,goalId,concern):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call add_template_goal_concern(:id,:con)',{'id':goalId,'con':concern})
       if (rs.rowcount == -1):
         rs.close()
@@ -10796,7 +11215,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentGoals(self,componentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getComponentGoals(:comp)',{'comp':componentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -10821,7 +11241,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addComponentGoal(self,componentId,goalName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addComponentGoal(:comp,:goal)',{'comp':componentId,'goal':goalName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding goal to component id ' + str(componentId) 
@@ -10839,7 +11260,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addComponentGoalAssociation(self,componentId,goalName,subGoalName,refType,rationale):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addComponentGoalAssociation(:comp,:goal,:sGoal,:ref,:rationale)',{'comp':componentId,'goal':goalName,'sGoal':subGoalName,'ref':refType,'rationale':rationale})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding goal association to component id ' + str(componentId) 
@@ -10853,7 +11275,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentGoalAssociations(self,componentId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentGoalAssociations(:comp)',{'comp':componentId})
       if (rs.rowcount == -1):
         rs.close()
@@ -10874,7 +11297,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentAttackSurface(self,cName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentAttackSurfaceMetric(:comp)',{'comp':cName})
       if (rs.rowcount == -1):
         rs.close()
@@ -10893,7 +11317,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def componentGoalModel(self,componentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call componentGoalModel(:comp)',{'comp':componentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining component class associations'
@@ -10951,7 +11376,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTemplateGoalResponsibility(self,goalId,resp):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call add_template_goal_responsibility(:goal,:resp)',{'goal':goalId,'resp':resp})
       if (rs.rowcount == -1):
         rs.close()
@@ -10967,7 +11393,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def templateGoalResponsibilities(self,tgId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call templateGoalResponsibilities(:tg)',{'tg':tgId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining responsibilities for template goal id ' + str(tgId)
@@ -10987,7 +11414,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def importTemplateAsset(self,taName,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call importTemplateAssetIntoEnvironment(:ta,:env)',{'ta':taName,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding importing asset ' + taName + ' into environment ' + environmentName
@@ -11002,7 +11430,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def candidateGoalObstacles(self,cvName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call candidateGoalObstacles(:cv,:env)',{'cv':cvName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting candidate obstacles associated with architetural pattern ' + cvName + ' and environment ' + envName
@@ -11022,7 +11451,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def templateGoalDefinition(self,tgId):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select definition from template_goal where id =:tg',{'tg':tgId})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting definition for template goal id ' + str(tgId)
@@ -11039,7 +11469,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def redmineArchitectureSummary(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call redmineArchitectureSummary(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting architecture summary to Redmine'
@@ -11060,7 +11491,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def redmineAttackPatternsSummary(self,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call redmineAttackPatternsSummary(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting attack patterns summary to Redmine'
@@ -11077,7 +11509,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def processesToXml(self,includeHeader=True):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call processesToXml(:head)',{'head':includeHeader})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting processes to XML'
@@ -11124,7 +11557,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getMemos(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getMemos(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining memos'
@@ -11152,7 +11586,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     memoName = parameters.name()
     memoDesc = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addMemo(:id,:name,:desc)',{'id':memoId,'name':memoName.encode('utf-8'),'desc':memoDesc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding memo ' + memoName
@@ -11171,7 +11606,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     memoName = parameters.name()
     memoDesc = parameters.description()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateMemo(:id,:name,:desc)',{'id':memoId,'name':memoName.encode('utf-8'),'desc':memoDesc.encode('utf-8')})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating memo ' + memoName
@@ -11186,7 +11622,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def documentMemos(self,docName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call documentMemos(:doc)',{'doc':docName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting memos for ' + docName
@@ -11214,7 +11651,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addDocumentMemo(self,docName,memoName,memoTxt,startIdx,endIdx):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addDocumentMemo(:doc,:mem,:txt,:sIdx,:eIdx)',{'doc':docName,'mem':memoName,'txt':memoTxt,'sIdx':startIdx,'eIdx':endIdx})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding memo ' + memoName + ' to ' + docName
@@ -11228,7 +11666,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def impliedProcess(self,procName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call impliedProcess(:proc)',{'proc':procName})
       if (rs.rowcount == -1):
         exceptionText = 'Error exporting implied process ' + procName
@@ -11249,7 +11688,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addImpliedProcessChannel(self,ipId,channelName,dataType):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addImpliedProcessChannel(:id,:chan,:type)',{'id':ipId,'chan':channelName,'type':dataType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding implied process channel '
@@ -11263,7 +11703,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def impliedProcessChannels(self,procName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call impliedProcessChannels(:proc)',{'proc':procName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting channels for implied process ' + procName
@@ -11282,7 +11723,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getQuotations(self):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getQuotations()')
       if (rs.rowcount == -1):
         exceptionText = 'Error getting quotations'
@@ -11311,7 +11753,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def updateQuotation(self,codeName,atName,aName,oldStartIdx,oldEndIdx,startIdx,endIdx,synopsis,label):
     try:
       if atName == 'internal_document':
-        session = self.conn
+        session = self.conn()
+        session.begin()
         rs = session.execute('call updateDocumentCode(:aName,:code,:oSIdx,:oEIdx,:sIdx,:eIdx,:syn,:lbl)',{'aName':aName,'code':codeName,'oSIdx':oldStartIdx,'oEIdx':oldEndIdx,'sIdx':startIdx,'eIdx':endIdx,'syn':synopsis,'lbl':label})
         if (rs.rowcount == -1):
           exceptionText = 'Error associating code ' + codeName + ' with ' + aName
@@ -11327,7 +11770,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def deleteQuotation(self,codeName,atName,aName,startIdx,endIdx):
     try:
       if atName == 'internal_document':
-        session = self.conn
+        session = self.conn()
+        session.begin()
         rs = session.execute('call deleteDocumentCode(:aName,:code,:sIdx,:eIdx)',{'aName':aName,'code':codeName,'sIdx':startIdx,'eIdx':endIdx})
         if (rs.rowcount == -1):
           exceptionText = 'Error associating code ' + codeName + ' with ' + aName
@@ -11343,7 +11787,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def artifactText(self,artType,artName):
     try:
       if artType == 'internal_document':
-        session = self.conn
+        session = self.conn()
+        session.begin()
         rs = session.execute('call artifactText(:type,:name)',{'type':artType,'name':artName})
         if (rs.rowcount == -1):
           exceptionText = 'Error getting content for ' + artType + ' ' + artName
@@ -11362,7 +11807,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def impliedCharacteristic(self,pName,fromCode,toCode,rtName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call impliedCharacteristic(:pName,:fCode,:tCode,:rt)',{'pName':pName,'fCode':fromCode,'tCode':toCode,'rt':rtName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting implied characteristic for ' + pName + '/' + fromCode + '/' + toCode + '/' + rtName 
@@ -11385,7 +11831,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def impliedCharacteristicElements(self,pName,fromCode,toCode,rtName,isLhs):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call impliedCharacteristicElements(:pName,:fCode,:tCode,:rt,:lhs)',{'pName':pName,'fCode':fromCode,'tCode':toCode,'rt':rtName,'lhs':isLhs})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting implied characteristic elements for ' + pName + '/' + fromCode + '/' + toCode + '/' + rtName 
@@ -11404,7 +11851,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def initialiseImpliedCharacteristic(self,pName,fromCode,toCode,rtName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call initialiseImpliedCharacteristic(pName,fCode,tCode,rt)',{'pName':pName,'fCode':fromCode,'tCode':toCode,'rt':rtName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding implied characteristic for ' + pName + '/' + fromCode + '/' + toCode + '/' + rtName 
@@ -11429,7 +11877,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     charType = parameters.characteristicType()
    
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addImpliedCharacteristic(:pName,:fCode,tCode,rt,char,qual,cType)',{'pName':pName,'fCode':fromCode,'tCode':toCode,'rt':rtName,'char':charName,'qual':qualName,'cType':charType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding implied characteristic for ' + pName + '/' + fromCode + '/' + toCode + '/' + rtName 
@@ -11464,7 +11913,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     intType = parameters.intentionType()
    
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateImpliedCharacteristic(:pName,:fCode,:tCode,:rt,:char,:qual,:cType)',{'pName':pName,'fCode':fromCode,'tCode':toCode,'rt':rtName,'char':charName,'qual':qualName,'cType':charType})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating implied characteristic for ' + pName + '/' + fromCode + '/' + toCode + '/' + rtName 
@@ -11488,7 +11938,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateImpliedCharacteristicIntention(self,charName,intName,intType):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateImpliedCharacteristicIntention(:char,:int,:type)',{'char':charName,'int':intName,'type':intType})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating intention for implied characteristic ' + charName 
@@ -11502,7 +11953,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addImpliedCharacteristicElement(self,charName,lblName,rtName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addImpliedCharacteristicElement(:char,:lbl,:rt)',{'char':charName,'lbl':lblName,'rt':rtName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding implied characteristic ' + charName + ' element ' + lblName + '/' + rtName
@@ -11516,7 +11968,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateImpliedCharacteristicElement(self,charName,lblName,rtName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateImpliedCharacteristicElement(:char,:lbl,:rt)',{'char':charName,'lbl':lblName,'rt':rtName})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating implied characteristic ' + charName + ' element ' + lblName 
@@ -11530,7 +11983,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def codeCount(self,codeName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select codeCount(:code)',{'code':codeName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting code count for ' + codeName
@@ -11551,7 +12005,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     intentionName = intention[2]
     intentionType = intention[3]
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addIntention(:ref,:rType,:int,:iType)',{'ref':refName,'rType':refType,'int':intentionName,'iType':intentionType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding intention ' + intentionName
@@ -11570,7 +12025,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     meansEnd = contribution[2]
     valName = contribution[3]
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addContribution(:src,:dest,:means,:val)',{'src':srcName,'dest':destName,'means':meansEnd,'val':valName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding contribution ' + srcName + '/' + destName
@@ -11585,7 +12041,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def impliedCharacteristicIntention(self,synName,pName,fromCode,toCode,rtName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select impliedCharacteristicIntention(:syn,:pName,:fCode,:tCode,:rt)',{'syn':synName,'pName':pName,'fCode':fromCode,'tCode':toCode,'rt':rtName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting intention for implied characteristic ' + synName
@@ -11602,7 +12059,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def impliedCharacteristicElementIntention(self,ciName,elName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('select impliedCharacteristicElementIntention(:ci,:el)',{'ci':ciName,'el':elName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting intention for element ' + elName + ' for implied characteristic intention ' + ciName
@@ -11619,7 +12077,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateImpliedCharacteristicElementIntention(self,ciName,elName,intName,intDim,meName,contName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call updateImpliedCharacteristicElementIntention(:ci,:el,:int,:dim,:me,:cont)',{'ci':ciName,'el':elName,'int':intName,'dim':intDim,'me':meName,'cont':contName})
       if (rs.rowcount == -1):
         exceptionText = 'Error updating intention for element ' + elName + ' for implied characteristic ' + ciName 
@@ -11634,7 +12093,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def deniedGoals(self,codeName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call deniedGoals(:code)',{'code':codeName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting denied goals for code ' + codeName
@@ -11658,7 +12118,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     locations = parameters.locations()
     links = parameters.links()
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addLocations(:id,:name,:diag)',{'id':locsId,'name':locsName,'diag':locDiagram})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding locations ' + locsName
@@ -11690,7 +12151,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     personaInstances = location.personaInstances()
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addLocation(:locsId,:locId,:locName)',{'locsId':locsId,'locId':locId,'locName':locName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding location ' + locName
@@ -11711,7 +12173,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     assetName = assetInstance[1]
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addAssetInstance(:lId,:iId,:iName,:assName)',{'lId':locId,'iId':instanceId,'iName':instanceName,'assName':assetName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding asset instance ' + instanceName
@@ -11727,7 +12190,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     personaName = personaInstance[1]
 
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addPersonaInstance(:lId,:iId,:iName,:assName)',{'lId':locId,'iId':instanceId,'iName':instanceName,'pName':personaName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding persona instance ' + instanceName
@@ -11742,11 +12206,14 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     tailLoc = link[0]
     headLoc = link[1]
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call addLocationLink(:lId,:tLoc,:hLoc)',{'lId':locsId,'tLoc':tailLoc,'hLoc':headLoc})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding link between locations ' + tailLoc + ' and ' + headLoc
-        raise DatabaseProxyException(exceptionText) 
+        raise DatabaseProxyException(exceptionText)
+      rs.close()
+      session.close() 
     except _mysql_exceptions.DatabaseError, e:
       id,msg = e
       exceptionText = 'MySQL error adding link between locations ' + tailLoc + ' and ' + headLoc + ' (id:' + str(id) + ',message:' + msg + ')'
@@ -11754,7 +12221,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getLocations(self,constraintId = -1):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getLocations(:const)',{'const':constraintId})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining locations'
@@ -11790,7 +12258,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getLocationNames(self,locsName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getLocationNames(:locs)',{'locs':locsName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining locations'
@@ -11810,7 +12279,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getLocationLinks(self,locsName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getLocationLinks(:locs)',{'locs':locsName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining location links'
@@ -11839,7 +12309,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getAssetInstances(self,locName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getAssetInstances(:locs)',{'locs':locName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining asset instances for location ' + locName
@@ -11860,7 +12331,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getPersonaInstances(self,locName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call getPersonaInstances(:locs)',{'locs':locName})
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining persona instances for location ' + locName
@@ -11884,7 +12356,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def locationsRiskModel(self,locationsName,environmentName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call locationsRiskModel(:locs,:env)',{'locs':locationsName,'env':environmentName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting locations risk model'
@@ -11951,7 +12424,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def templateAssetMetrics(self,taName):
     try: 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call templateAssetMetrics(:ta)',{'ta':taName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting metrics for template asset ' + taName
@@ -11968,7 +12442,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def riskModelElements(self,envName):
     try: 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call riskAnalysisModelElements(:env)',{'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting elements for risk model in environment ' + envName
@@ -11987,7 +12462,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def assetThreatRiskLevel(self,assetName,threatName):
     try: 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call assetThreatRiskLevel(:ass,:thr)',{'ass':assetName,'thr':threatName})
       if (rs.rowcount == -1):
         exceptionText = 'Error calculating risk level for ' + assetName + ' and threat ' + threatName
@@ -12004,7 +12480,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def assetRiskLevel(self,assetName):
     try: 
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call assetRiskLevel(:ass)',{'ass':assetName})
       if (rs.rowcount == -1):
         exceptionText = 'Error calculating risk level for ' + assetName
@@ -12021,7 +12498,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def dimensionSummary(self,dimName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call ' + dimName + 'Summary(:name)',{'name':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error calculating ' + dimName + ' for environment ' + envName
@@ -12068,7 +12546,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
                'flush privileges']
 
       for stmt in stmts:
-        session = self.conn
+        session = self.conn()
+        session.begin()
         rs = session.execute(stmt)
         if (rs.rowcount == -1):
           exceptionText = 'Error running ' + stmt
@@ -12102,7 +12581,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     dbEngine = create_engine('mysql+mysqldb://'+dbUser+':'+dbPasswd+'@'+dbHost+':'+str(dbPort))
     tmpConn = scoped_session(sessionmaker(bind=dbEngine))
     '''
-    session = self.conn
+    session = self.conn()
+      session.begin()
     rs = session.execute('show databases')
     if (rs.rowcount == -1):
       exceptionText = 'Error getting available databases'
@@ -12148,7 +12628,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getUseCaseRequirements(self,ucName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call useCaseRequirements(:uc)',{'uc':ucName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting requirements associated with use case ' + ucName
@@ -12167,7 +12648,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def getUseCaseGoals(self,ucName,envName):
     try:
-      session = self.conn
+      session = self.conn()
+      session.begin()
       rs = session.execute('call useCaseGoals(:uc,:env)',{'uc':ucName,'env':envName})
       if (rs.rowcount == -1):
         exceptionText = 'Error getting goals associated with use case ' + ucName

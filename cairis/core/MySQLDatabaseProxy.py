@@ -12061,7 +12061,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
     try:
       dbEngine = create_engine('mysql+mysqldb://root:'+rPasswd+'@'+dbHost+':'+str(dbPort))
-      self.conn = scoped_session(sessionmaker(bind=dbEngine, autocommit=True)))
+      self.conn = scoped_session(sessionmaker(bind=dbEngine, autocommit=True))
       stmts = ['drop database if exists `' + dbName+ '`',
                'create database ' + dbName,
                "grant all privileges on `%s`.* TO '%s'@'%s'" %(db,b.dbUser, b.dbHost),

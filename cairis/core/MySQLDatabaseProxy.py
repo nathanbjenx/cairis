@@ -6099,7 +6099,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     envs = self.getEnvironmentNames()
     deps = {}
     session = self.conn()
-      session.begin()
+    session.begin()
     for env in envs:
       depRows = self.getDependencyTable(env)
       if (len(depRows) > 0):

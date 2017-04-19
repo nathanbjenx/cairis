@@ -474,7 +474,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def newId(self):
     try: 
       session = self.conn
-      rs = session.execute('call newId()',[])
+      rs = session.execute('call newId()')
       if (rs.rowcount == -1):
         exceptionText = 'Error getting last id'
         raise DatabaseProxyException(exceptionText) 
@@ -548,7 +548,9 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     environmentDescription = parameters.description()
     try:
       session = self.conn
-      rs = session.execute('call addEnvironment(:id,:name,:shortCode,:desc)',{'id':environmentId,'name':environmentName,'shortCode':environmentShortCode,'desc':environmentDescription})
+      #rs = session.execute('call addEnvironment(:id,:name,:shortCode,:desc)',{'id':environmentId,'name':environmentName,'shortCode':environmentShortCode,'desc':environmentDescription})
+      sql = 'call addEnvironment(%s,"%s","%s","%s")'%(environmentId,environmentName,environmentShortCode,environmentDescription)
+      rs = session.execute(sql)
       if (rs.rowcount == -1):
         exceptionText = 'Error adding environment ' + environmentName
         raise DatabaseProxyException(exceptionText) 
@@ -755,7 +757,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def getAttackers(self,constraintId = -1):
     try:
       session = self.conn
-      rs = session.execute('call getAttackers(:id)',{constraintId})
+      rs = session.execute('call getAttackers(:id)',{'id':constraintId})
       if (rs.rowcount == -1):
         rs.close()
         session.close()
@@ -793,8 +795,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def dimensionEnvironments(self,dimId,dimTable):
     try:
       session = self.conn
-      sqlTxt = 'call ' + dimTable + '_environments(:id)'
-      rs = session.execute(sqlTxt,{'id':dimId})
+      sqlTxt = 'call ' + dimTable + '_environments(%s)' %(dimId)
+      rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         rs.close()
         session.close()
@@ -903,7 +905,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       rs = session.execute("call addAttacker(:id,:name,:desc,:image)",{'id':attackerId,'name':attackerName,'desc':attackerDesc,'image':attackerImage})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding attacker ' + attackerName
-        raise DatabaseProxyException(exceptionText) 
+        raise DatabaseProxyException(exceptionText)
+      session.commit() 
       self.addTags(attackerName,'attacker',tags)
       for environmentProperties in parameters.environmentProperties():
         environmentName = environmentProperties.name()
@@ -923,8 +926,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def addDimensionEnvironment(self,dimId,table,environmentName):
     try:
       session = self.conn
-      sqlTxt = 'call add_' + table + '_environment(:dId,:envName)'
-      rs = session.execute(sqlTxt,{'dId':dimId,'envName':environmentName})
+      sqlTxt = 'call add_' + table + '_environment(%s,"%s")' %(dimId,environmentName)
+      rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         exceptionText = 'Error associating ' + table + ' id ' + str(dimId) + ' with environment ' + environmentName
         raise DatabaseProxyException(exceptionText) 
@@ -1004,8 +1007,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def deleteObject(self,objtId,tableName):
     try: 
       session = self.conn
-      sqlTxt = 'call delete_' + tableName + '(:id)'
-      rs = session.execute(sqlTxt,{'id':objtId})
+      sqlTxt = 'call delete_' + tableName + '(%s)' %(objtId)
+      rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         exceptionText = 'Error deleting ' + tableName + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
@@ -1034,10 +1037,13 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     ifs = parameters.interfaces()
     try:
       session = self.conn
-      rs = session.execute('call addAsset(:id,:name,:shortCode,:desc,:sig,:type,:crit,:rationale)',{'id':assetId,'name':assetName,'shortCode':shortCode,'desc':assetDesc.encode('utf-8'),'sig':assetSig.encode('utf-8'),'type':assetType,'crit':assetCriticality,'rationale':assetCriticalRationale})
+      #rs = session.execute('call addAsset(:id,:name,:shortCode,:desc,:sig,:type,:crit,:rationale)',{'id':assetId,'name':assetName,'shortCode':shortCode,'desc':assetDesc.encode('utf-8'),'sig':assetSig.encode('utf-8'),'type':assetType,'crit':assetCriticality,'rationale':assetCriticalRationale})
+      sql ='call addAsset(%s,"%s","%s","%s","%s","%s","%s","%s")'%(assetId,assetName,shortCode,assetDesc.encode('utf-8'),assetSig.encode('utf-8'),assetType,assetCriticality,assetCriticalRationale)
+      rs = session.execute(sql)
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new asset ' + assetName
-        raise DatabaseProxyException(exceptionText) 
+        raise DatabaseProxyException(exceptionText)
+      session.commit() 
       self.addTags(assetName,'asset',tags)
       self.addInterfaces(assetName,'asset',ifs)
       for cProperties in parameters.environmentProperties():
@@ -1093,10 +1099,10 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       raise DatabaseProxyException(exceptionText) 
 
   def addTemplateAssetProperties(self,taId,cProp,iProp,avProp,acProp,anProp,panProp,unlProp,unoProp,cRat,iRat,avRat,acRat,anRat,panRat,unlRat,unoRat):
-    sqlTxt = 'call add_template_asset_properties(:taId,:cProp,:iProp,:avProp,:acProp,:anProp,:panProp,:unlProp,:unoProp,:cRat,:iRat,:avRat,:acRat,:anRat,:panRat,:unlRat,:unoRat)'
+    sqlTxt = 'call add_template_asset_properties(%s,"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s")' %(taId,cProp,iProp,avProp,acProp,anProp,panProp,unlProp,unoProp,cRat,iRat,avRat,acRat,anRat,panRat,unlRat,unoRat)
     try:
       session = self.conn
-      rs = session.execute(sqlTxt,{'taId':taId,'cProp':cProp,'iProp':iProp,'avProp':avProp,'acProp':acProp,'anProp':anProp,'panProp':panProp,'unlProp':unlProp,'unoProp':unoProp,'cRat':cRat,'iRat':iRat,'avRat':avRat,'acRat':acRat,'anRat':anRat,'patRat':panRat,'unlRat':unlRat,'unoRat':unoRat})
+      rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         exceptionText = 'Error setting security properties for template asset id ' + str(taId)
         raise DatabaseProxyException(exceptionText) 
@@ -1108,38 +1114,46 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       raise DatabaseProxyException(exceptionText) 
 
   def updateTemplateAssetProperties(self,taId,cProp,iProp,avProp,acProp,anProp,panProp,unlProp,unoProp,cRat,iRat,avRat,acRat,anRat,panRat,unlRat,unoRat):
-    sqlTxt = 'update template_asset_property set property_value_id=:pId, property_rationale=:rat where template_asset_id =:taId and property_id =:pId'
+    sqlTxt = 'update template_asset_property set property_value_id=%s, property_rationale="%s" where template_asset_id = %s and property_id = %s'
     try:
       session = self.conn
-      rs = session.execute(sqlTxt,{'pId':cProp,'rat':cRat,'taId':taId,'pId':C_PROPERTY})
+      stmt = sqlTxt %(cProp,cRat,taId,C_PROPERTY)
+      rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error updating confidentiality property for template asset id ' + str(taId)
-        raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pId':iProp,'rat':iRat,'taId':taId,'pId':I_PROPERTY})
+        raise DatabaseProxyException(exceptionText)
+      stmt = sqlTxt %(iProp,iRat,taId,I_PROPERTY) 
+      rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error updating integrity property for template asset id ' + str(taId)
-        raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pId':avProp,'rat':avRat,'taId':taId,'pId':AV_PROPERTY})
+        raise DatabaseProxyException(exceptionText)
+      stmt = sqlTxt %(avProp,avRat,taId,AV_PROPERTY) 
+      rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error updating availability property for template asset id ' + str(taId)
-        raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pId':acProp,'rat':acRat,'taId':taId,'pId':AC_PROPERTY})
+        raise DatabaseProxyException(exceptionText)
+      stmt = sqlTxt %(acProp,acRat,taId,AC_PROPERTY) 
+      rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error updating accountability property for template asset id ' + str(taId)
-        raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pId':anProp,'rat':anRat,'taId':taId,'pId':AN_PROPERTY})
+        raise DatabaseProxyException(exceptionText)
+      stmt = sqlTxt %(anProp,anRat,taId,AN_PROPERTY) 
+      rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error updating anonymity property for template asset id ' + str(taId)
-        raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pId':panProp,'rat':panRat,'taId':taId,'pId':PAN_PROPERTY})
+        raise DatabaseProxyException(exceptionText)
+      stmt = sqlTxt %(panProp,panRat,taId,PAN_PROPERTY) 
+      rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error updating pseudonymity property for template asset id ' + str(taId)
-        raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pId':unlProp,'rat':unlRat,'taId':taId,'pId':UNL_PROPERTY})
+        raise DatabaseProxyException(exceptionText)
+      stmt = sqlTxt %(unlProp,unlRat,taId,UNL_PROPERTY) 
+      rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error updating unlinkability property for template asset id ' + str(taId)
-        raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pId':unoProp,'rat':unoRat,'taId':taId,'pId':UNO_PROPERTY})
+        raise DatabaseProxyException(exceptionText)
+      stmt = sqlTxt %(unoProp,unoRat,taId,UNO_PROPERTY) 
+      rs = session.execute(stmt)
       if (rs.rowcount == -1):
         exceptionText = 'Error updating unobservability property for template asset id ' + str(taId)
         raise DatabaseProxyException(exceptionText) 
@@ -1151,10 +1165,10 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       raise DatabaseProxyException(exceptionText) 
 
   def addSecurityProperties(self,dimTable,objtId,environmentName,securityProperties,pRationale):
-    sqlTxt = 'call add_' + dimTable + '_properties(:oId,:envName,:sCProp,:sIProp,:sAvProp,:sAcProp,:sAnProp,:sPanProp,:sUnlProp,:sUnoProp,:pCProp,:pIProp,:pAvProp,:pAcProp,:pAnProp,:pPanProp,:pUnlProp,:pUnoProp)'
+    sqlTxt = 'call add_' + dimTable + '_properties(%s,"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s")' %(objtId,environmentName,securityProperties[C_PROPERTY],securityProperties[I_PROPERTY],securityProperties[AV_PROPERTY],securityProperties[AC_PROPERTY],securityProperties[AN_PROPERTY],securityProperties[PAN_PROPERTY],securityProperties[UNL_PROPERTY],securityProperties[UNO_PROPERTY],pRationale[C_PROPERTY],pRationale[I_PROPERTY],pRationale[AV_PROPERTY],pRationale[AC_PROPERTY],pRationale[AN_PROPERTY],pRationale[PAN_PROPERTY],pRationale[UNL_PROPERTY],pRationale[UNO_PROPERTY])
     try:
       session = self.conn
-      rs = session.execute(sqlTxt,{'oId':objtId,'envName':environmentName,'sCProp':securityProperties[C_PROPERTY],'sIProp':securityProperties[I_PROPERTY],'sAvProp':securityProperties[AV_PROPERTY],'sAcProp':securityProperties[AC_PROPERTY],'sAnProp':securityProperties[AN_PROPERTY],'sPanProp':securityProperties[PAN_PROPERTY],'sUnlProp':securityProperties[UNL_PROPERTY],'sUnoProp':securityProperties[UNO_PROPERTY],'pCProp':pRationale[C_PROPERTY],'pIProp':pRationale[I_PROPERTY],'pAvProp':pRationale[AV_PROPERTY],'pAcProp':pRationale[AC_PROPERTY],'pAnProp':pRationale[AN_PROPERTY],'pPanProp':pRationale[PAN_PROPERTY],'pUnlProp':pRationale[UNL_PROPERTY],'pUnoProp':pRationale[UNO_PROPERTY]})
+      rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         exceptionText = 'Error setting security properties for ' + dimTable + ' id ' + str(objtId) + ' in environment ' + environmentName
         raise DatabaseProxyException(exceptionText) 
@@ -1168,40 +1182,40 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def updateSecurityProperties(self,dimTable,objtId,securityProperties,pRationale):
     sqlTxt = ''
     if (dimTable == 'threat'):
-      sqlTxt += 'update threat_property set property_value_id=:pV, property_rationale=:pRat where environment_id = ' + str(self.environmentId) + ' and threat_id =:tId and property_id =:pId'
+      sqlTxt += 'update threat_property set property_value_id=%s, property_rationale="%s" where environment_id = ' + str(self.environmentId) + ' and threat_id = %s and property_id = %s'
     else:
-      sqlTxt += 'update ' + dimTable + '_property set property_value_id=:pV, property_rationale=:pRat where ' + dimTable + '_id =:tId and property_id =:pId'
+      sqlTxt += 'update ' + dimTable + '_property set property_value_id=%s, property_rationale="%s" where ' + dimTable + '_id = %s and property_id = %s'
     try:
       session = self.conn
-      rs = session.execute(sqlTxt,{'pV':securityProperties[C_PROPERTY],'pRat':pRationale[C_PROPERTY],'tId':objtId,'pId':C_PROPERTY})
+      rs = session.execute(sqlTxt %(securityProperties[C_PROPERTY],pRationale[C_PROPERTY],objtId,C_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating confidentiality property for ' + dimTable + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pV':securityProperties[I_PROPERTY],'pRat':pRationale[I_PROPERTY],'tId':objtId,'pId':I_PROPERTY})
+      rs = session.execute(sqlTxt %(securityProperties[C_PROPERTY],pRationale[C_PROPERTY],objtId,C_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating integrity property for ' + dimTable + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pV':securityProperties[AV_PROPERTY],'pRat':pRationale[AV_PROPERTY],'tId':objtId,'pId':AV_PROPERTY})
+      rs = session.execute(sqlTxt %(securityProperties[I_PROPERTY],pRationale[I_PROPERTY],objtId,I_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating availability property for ' + dimTable + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pV':securityProperties[AC_PROPERTY],'pRat':pRationale[AC_PROPERTY],'tId':objtId,'pId':AC_PROPERTY})
+      rs = session.execute(sqlTxt %(securityProperties[AV_PROPERTY],pRationale[AV_PROPERTY],objtId,AV_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating accountability property for ' + dimTable + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pV':securityProperties[AN_PROPERTY],'pRat':pRationale[AN_PROPERTY],'tId':objtId,'pId':AN_PROPERTY})
+      rs = session.execute(sqlTxt %(securityProperties[AN_PROPERTY],pRationale[AN_PROPERTY],objtId,AN_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating anonymity property for ' + dimTable + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pV':securityProperties[PAN_PROPERTY],'pRat':pRationale[PAN_PROPERTY],'tId':objtId,'pId':PAN_PROPERTY})
+      rs = session.execute(sqlTxt %(securityProperties[PAN_PROPERTY],pRationale[PAN_PROPERTY],objtId,PAN_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating pseudonymity property for ' + dimTable + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pV':securityProperties[UNL_PROPERTY],'pRat':pRationale[UNL_PROPERTY],'tId':objtId,'pId':UNL_PROPERTY})
+      rs = session.execute(sqlTxt %(securityProperties[PAN_PROPERTY],pRationale[PAN_PROPERTY],objtId,PAN_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating unlinkability property for ' + dimTable + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
-      rs = session.execute(sqlTxt,{'pV':securityProperties[UNO_PROPERTY],'pRat':pRationale[UNO_PROPERTY],'tId':objtId,'pId':UNO_PROPERTY})
+      rs = session.execute(sqlTxt %(securityProperties[UNO_PROPERTY],pRationale[UNO_PROPERTY],objtId,UNO_PROPERTY))
       if (rs.rowcount == -1):
         exceptionText = 'Error updating unobservability property for ' + dimTable + ' id ' + str(objtId)
         raise DatabaseProxyException(exceptionText) 
@@ -1394,9 +1408,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
         cName,ifName = dimensionName.split('_')
         rs = session.execute('select interfaceId(:name)',{'name':ifName})
       else:
-        dName = self.conn.connection()
-        dName = dName.connection
-        dimensionName = dName.escape_string(dimensionName)
+        dimensionName = self.conn.connection().connection.escape_string(dimensionName)
         rs = session.execute('call dimensionId(:name,:table)',{'name':dimensionName,'table':dimensionTable})
 
       if (rs.rowcount == -1):
@@ -1455,8 +1467,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       dimensions = []
       session = self.conn
       if (dimensionTable != 'template_asset' and dimensionTable != 'template_requirement' and dimensionTable != 'template_goal' and dimensionTable != 'locations'):
-        sqlText = 'call ' + dimensionTable + 'Names(:env)' 
-        rs = session.execute(sqlText,{'env':currentEnvironment})
+        sqlText = 'call ' + dimensionTable + 'Names("%s")' 
+        rs = session.execute(sqlText %(currentEnvironment))
       elif (dimensionTable == 'template_asset'):
         rs = session.execute('call template_assetNames()')
       elif (dimensionTable == 'template_requirement'):
@@ -1514,7 +1526,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new threat ' + threatName
         raise DatabaseProxyException(exceptionText) 
-
+      session.commit()
       self.addTags(threatName,'threat',tags)
       for cProperties in parameters.environmentProperties():
         environmentName = cProperties.name()
@@ -1641,7 +1653,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new vulnerability ' + vulName
         raise DatabaseProxyException(exceptionText) 
-
+      session.commit()
       self.addTags(vulName,'vulnerability',tags)
 
       for cProperties in parameters.environmentProperties():
@@ -1706,8 +1718,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def relatedProperties(self,dimTable,objtId,environmentId):
     try:
       session = self.conn
-      sqlTxt = 'call ' + dimTable + 'Properties (:oId,:eId)'
-      rs = session.execute(sqlTxt,{'oId':objtId,'eId':environmentId})
+      sqlTxt = 'call ' + dimTable + 'Properties (%s,%s)' %(objtId,environmentId)
+      rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         exceptionText = 'Error getting ' + dimTable + ' properties in environment id ' + str(environmentId)
         raise DatabaseProxyException(exceptionText) 
@@ -1726,8 +1738,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def templateAssetProperties(self,taId):
     try:
       session = self.conn
-      sqlTxt = 'call template_assetProperties(:id)'
-      rs = session.execute(sqlTxt,{'id':taId})
+      sqlTxt = 'call template_assetProperties(%s)' %(taId)
+      rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         exceptionText = 'Error getting template asset properties'
         raise DatabaseProxyException(exceptionText) 
@@ -1809,8 +1821,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def dimensionRoles(self,dimId,environmentId,table):
     try:
       session = self.conn 
-      sqlTxt = 'call ' + table + '_roles(:dId,:eId)'
-      rs = session.execute(sqlTxt,{'dId':dimId,'eId':environmentId})
+      sqlTxt = 'call ' + table + '_roles(%s,%s)' %(dimId,environmentId)
+      rs = session.execute(sqlTxt)
       if (rs.rowcount == -1):
         rs.close()
         session.close() 
@@ -1894,7 +1906,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       rs = session.execute('call addPersona(:id,:name,:act,:att,:apt,:mot,:skills,:intr,:cont,:img,:ass,:type)',{'id':personaId,'name':personaName,'act':activities.encode('utf-8'),'att':attitudes.encode('utf-8'),'apt':aptitudes.encode('utf-8'),'mot':motivations.encode('utf-8'),'skills':skills.encode('utf-8'),'intr':intrinsic.encode('utf-8'),'cont':contextual.encode('utf-8'),'img':image,'ass':isAssumption,'type':pType})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new persona ' + personaName
-        raise DatabaseProxyException(exceptionText) 
+        raise DatabaseProxyException(exceptionText)
+      session.commit() 
       self.addPersonaCodes(personaName,codes)
       self.addTags(personaName,'persona',tags)
       for environmentProperties in parameters.environmentProperties():
@@ -1917,8 +1930,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
     try:
       session = self.conn
       for role in roles:
-        sqlTxt = 'call add_' + table + '_role (:pId,:env,:role)'
-        rs = session.execute(sqlTxt,{'pId':personaId,'env':environmentName,'role':role}) 
+        sqlTxt = 'call add_' + table + '_role (%s,"%s","%s")' %(personaId, environmentName,role)
+        rs = session.execute(sqlTxt) 
         if (rs.rowcount == -1):
           exceptionText = 'Error associating role ' + role + ' with ' + table + ' id ' + str(personaId)
           raise DatabaseProxyException(exceptionText) 
@@ -2153,15 +2166,9 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
      raise DatabaseProxyException(exceptionText) 
 
   def addTask(self,parameters):
-    taskName = self.conn.connection()
-    taskName = taskName.connection
-    taskName = taskName.escape_string(parameters.name())
-    taskShortCode = self.conn.connection()
-    taskShortCode = taskShortCode.connection
-    taskShortCode = taskShortCode.escape_string(parameters.shortCode())
-    taskObjective = self.conn.connection()
-    taskObjective = taskObjective.connection
-    taskObjective = taskObjective.escape_string(parameters.objective())
+    taskName = self.conn.connection().connection.escape_string(parameters.name())
+    taskShortCode = self.conn.connection().connection.escape_string(parameters.shortCode())
+    taskObjective = self.conn.connection().connection.escape_string(parameters.objective())
     isAssumption = parameters.assumption()
     taskAuthor = parameters.author()
     tags = parameters.tags()
@@ -2171,7 +2178,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       rs = session.execute('call addTask(:id,:name,:shortCode,:obj,:ass,:auth)',{'id':taskId,'name':taskName,'shortCode':taskShortCode,'obj':taskObjective,'ass':isAssumption,'auth':taskAuthor})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new task ' + taskName
-        raise DatabaseProxyException(exceptionText) 
+        raise DatabaseProxyException(exceptionText)
+      session.commit() 
       self.addTags(taskName,'task',tags)
       for cProperties in parameters.environmentProperties():
         environmentName = cProperties.name()
@@ -2201,7 +2209,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       rs = session.execute('call addMisuseCase(:id,:name)',{'id':mcId,'name':mcName})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new task ' + scName
-        raise DatabaseProxyException(exceptionText) 
+        raise DatabaseProxyException(exceptionText)
+      session.commit() 
       self.addMisuseCaseRisk(mcId,parameters.risk())
       for cProperties in parameters.environmentProperties():
         environmentName = cProperties.name()
@@ -2596,7 +2605,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new response ' + mitName
         raise DatabaseProxyException(exceptionText) 
-
+      session.commit()
       self.addTags(respName,'response',tags)
 
       for cProperties in parameters.environmentProperties():
@@ -2938,15 +2947,15 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       session = self.conn
      
       if (traceTable != 'requirement_task' and traceTable != 'requirement_usecase' and traceTable != 'requirement_requirement'):
-        sqlText = 'insert into ' + traceTable + ' values(:frm,:to)'
-        rs = session.execute(sqlText,{'frm':fromId,'to':toId}) 
+        sqlText = 'insert into ' + traceTable + ' values(%s,%s)' %(fromId,toId)
+        rs = session.execute(sqlText) 
       elif (traceTable == 'requirement_requirement'):
-        sqlText = 'insert into ' + traceTable + ' values(:frm,:to,:cont)'
-        rs = session.execute(sqlText,{'frm':fromId,'to':toId,'cont':contributionType}) 
+        sqlText = 'insert into ' + traceTable + ' values(%s,%s,"%s")' %(fromId,toId,contributionType)
+        rs = session.execute(sqlText) 
       else:
         refTypeId = self.getDimensionId(contributionType,'reference_type')
-        sqlText = 'insert into ' + traceTable + ' values(:frm,:to,:ref)'
-        rs = session.execute(sqlText,{'frm':fromId,'to':toId,'ref':refTypeId}) 
+        sqlText = 'insert into ' + traceTable + ' values(%s,%s,%s)' %(fromId,toId,refTypeId)
+        rs = session.execute(sqlText) 
       if (rs.rowcount == -1):
         exceptionText = 'Error adding fromId ' + str(fromId) + ' and toId ' + str(toId) + ' to link table ' + traceTable
         raise DatabaseProxyException(exceptionText) 
@@ -3320,6 +3329,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
         exceptionText = 'Error adding new countermeasure ' + cmName
         raise DatabaseProxyException(exceptionText) 
 
+      session.commit()
       self.addTags(cmName,'countermeasure',tags)
 
       for cProperties in parameters.environmentProperties():
@@ -3877,7 +3887,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       rs = session.execute('call addGoal(:id,:name,:orig)',{'id':goalId,'name':goalName,'orig':goalOrig})
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new goal ' + goalName
-        raise DatabaseProxyException(exceptionText) 
+        raise DatabaseProxyException(exceptionText)
+      session.commit()
       self.addTags(goalName,'goal',tags)
       for environmentProperties in parameters.environmentProperties():
         environmentName = environmentProperties.name()
@@ -4254,23 +4265,23 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def classModel(self,envName,asName = '',hideConcerns = False):
     if (hideConcerns == True):
       if (asName == ''):
-        return self.classAssociations('call concernlessClassModel(:const)',envName)
+        return self.classAssociations('call concernlessClassModel("%s")',envName)
       else:
-        return self.classTreeAssociations('call concernlessClassTree(:goal,:env)',asName,envName)
+        return self.classTreeAssociations('call concernlessClassTree("%s","%s")',asName,envName)
     else:
       if (asName == ''):
-        return self.classAssociations('call classModel(:const)',envName)
+        return self.classAssociations('call classModel("%s")',envName)
       else:
-        return self.classTreeAssociations('call classTree(:goal,:env)',asName,envName)
+        return self.classTreeAssociations('call classTree("%s","%s")',asName,envName)
 
 
   def getClassAssociations(self,constraintId = ''):
-    return self.classAssociations('call classAssociationNames(:const)',constraintId)
+    return self.classAssociations('call classAssociationNames(%s)',constraintId)
 
   def classAssociations(self,procName,constraintId = ''):
     try:
       session = self.conn
-      rs = session.execute(procName,{'const':constraintId})
+      rs = session.execute(procName %(constraintId))
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining class associations'
         raise DatabaseProxyException(exceptionText) 
@@ -4307,7 +4318,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def classTreeAssociations(self,procName,assetName,envName):
     try:
       session = self.conn
-      rs = session.execute(procName,{'ass':assetName,'env':envName})
+      rs = session.execute(procName %(assetName,envName))
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining class associations'
         raise DatabaseProxyException(exceptionText) 
@@ -4403,41 +4414,41 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def goalModel(self,envName,goalName = '',topLevelGoals = 0,caseFilter = 0):
     if (goalName == ''):
-      return self.goalAssociations('call goalModel(:const)',envName)
+      return self.goalAssociations('call goalModel("%s")',envName)
     else:
-      return self.goalTreeAssociations('call goalTree(:goal,:env,:tlGoal,:case)',goalName,envName,topLevelGoals,caseFilter)
+      return self.goalTreeAssociations('call goalTree("%s","%s","%s","%s")',goalName,envName,topLevelGoals,caseFilter)
    
 
   def responsibilityModel(self,envName,roleName = ''):
     if (roleName == ''):
-      return self.goalAssociations('call responsibilityModel(:const)',envName)
+      return self.goalAssociations('call responsibilityModel("%s")',envName)
     else:
-      return self.goalTreeAssociations('call subResponsibilityModel(:goal,:env)',envName,roleName)
+      return self.goalTreeAssociations('call subResponsibilityModel("%s","%s")',envName,roleName)
  
   def obstacleModel(self,envName,goalName = '',topLevelGoals = 0):
     if (goalName == ''):
-      return self.goalAssociations('call obstacleModel(:env)',envName)
+      return self.goalAssociations('call obstacleModel("%s")',envName)
     else:
-      return self.goalTreeAssociations('call obstacleTree(:goal,:env,:tlGoal,:case)',goalName,envName,topLevelGoals)
+      return self.goalTreeAssociations('call obstacleTree("%s","%s","%s","%s")',goalName,envName,topLevelGoals)
  
 
 
   def taskModel(self,envName,taskName = '',mcFilter=False):
     if (taskName == ''):
-      return self.goalAssociations('call taskModel(:const)',envName)
+      return self.goalAssociations('call taskModel("%s")',envName)
     else:
       if (mcFilter == True):
-        return self.goalTreeAssociations('call subMisuseCaseModel(:goal,:env)',taskName,envName)
+        return self.goalTreeAssociations('call subMisuseCaseModel("%s","%s")',taskName,envName)
       else:
-        return self.goalTreeAssociations('call subTaskModel(:goal,:env)',taskName,envName)
+        return self.goalTreeAssociations('call subTaskModel("%s","%s")',taskName,envName)
 
   def getGoalAssociations(self,constraintId = ''):
-    return self.goalAssociations('call goalAssociationNames(:const)',constraintId)
+    return self.goalAssociations('call goalAssociationNames(%s)',constraintId)
 
   def goalAssociations(self,procName,constraintId = ''):
     try:
       session = self.conn
-      rs = session.execute(procName,{'const':constraintId})
+      rs = session.execute(procName %(constraintId))
       if (rs.rowcount == -1):
         exceptionText = 'Error obtaining goal associations'
         raise DatabaseProxyException(exceptionText) 
@@ -4499,8 +4510,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
   def goalTreeAssociations(self,procName,goalName,envName,topLevelGoals = 0,caseFilter = 0):
     try:
       session = self.conn
-      if (procName == 'call goalTree(:goal,:env,:tlGoal,:case)') or (procName == 'call obstacleTree(:goal,:env,:tlGoal,:case)'):
-        rs = session.execute(procName,{'goal':goalName,'env':envName,'tlGoal':topLevelGoals,'case':caseFilter})
+      if (procName == 'call goalTree("%s","%s","%s","%s")') or (procName == 'call obstacleTree("%s","%s","%s","%s")'):
+        rs = session.execute(procName %(goalName,envName,topLevelGoals,caseFilter))
       else:
         rs = session.execute(procName,{'goal':goalName,'env':envName})
       if (rs.rowcount == -1):
@@ -5036,8 +5047,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
         session.close()
         exceptionText = 'Error adding new domain property ' + dpName
         raise DatabaseProxyException(exceptionText) 
-      self.addTags(dpName,'domainproperty',tags)
       session.commit()
+      self.addTags(dpName,'domainproperty',tags)
       rs.close()
       session.close()
       return dpId
@@ -5195,6 +5206,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       if (rs.rowcount == -1):
         exceptionText = 'Error adding new obstacle ' + obsName
         raise DatabaseProxyException(exceptionText) 
+      session.commit()
       self.addTags(obsName,'obstacle',tags)
       for environmentProperties in parameters.environmentProperties():
         environmentName = environmentProperties.name()
@@ -6676,19 +6688,11 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addExternalDocument(self,parameters):
     docId = self.newId()
-    docName = self.conn.connection()
-    docName = docName.connection
-    docName = self.conn.escape_string(parameters.name().replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u2013", "-"))
+    docName = self.conn.connection().connection.escape_string(parameters.name().replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u2013", "-").replace(u"\u2022","*"))
     docVersion = parameters.version()
-    docDate = self.conn.connection()
-    docDate = docDate.connection
-    docDate = docDate.escape_string(parameters.date())
-    docAuthors = self.conn.connection()
-    docAuthors = docAuthors.connection
-    docAuthors = docAuthors.escape_string(parameters.authors())
-    docDesc = self.conn.connection()
-    docDesc = docDesc.connection
-    docDesc = docDesc.escape_string(parameters.description())
+    docDate = self.conn.connection().connection.escape_string(parameters.date())
+    docAuthors = self.conn.connection().connection.escape_string(parameters.authors())
+    docDesc = self.conn.connection().connection.escape_string(parameters.description())
     try:
       session = self.conn
       rs = session.execute('call addExternalDocument(:id,:name,:vers,:date,:auth,:desc)',{'id':docId,'name':docName.encode('utf-8'),'vers':docVersion.encode('utf-8'),'date':docDate.encode('utf-8'),'auth':docAuthors.encode('utf-8'),'desc':docDesc.encode('utf-8')})
@@ -6707,19 +6711,11 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def updateExternalDocument(self,parameters):
     docId = parameters.id()
-    docName = self.conn.connection()
-    docName = docName.connection
-    docName = docName.escape_string(parameters.name())
+    docName = self.conn.connection().connection.escape_string(parameters.name())
     docVersion = parameters.version()
-    docDate = self.conn.connection()
-    docDate = docDate.connection
-    docDate = docDate.escape_string(parameters.date())
-    docAuthors = self.conn.connection()
-    docAuthors = docAuthors.connection
-    docAuthors = docAuthors.escape_string(parameters.authors())
-    docDesc = self.conn.connection()
-    docDesc = docDesc.connection
-    docDesc = docDesc.escape_string(parameters.description())
+    docDate = self.conn.connection().connection.escape_string(parameters.date())
+    docAuthors = self.conn.connection().connection.escape_string(parameters.authors())
+    docDesc = self.conn.connection().connection.escape_string(parameters.description())
     try:
       session = self.conn
       rs = session.execute('call updateExternalDocument(:id,:name,:vers,:date,:auth,:desc)',{'id':docId,'name':docName.encode('utf-8'),'vers':docVersion.encode('utf-8'),'date':docDate.encode('utf-8'),'auth':docAuthors.encode('utf-8'),'desc':docDesc.encode('utf-8')})
@@ -6736,8 +6732,8 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addDocumentReference(self,parameters):
     refId = self.newId()
-    refName = self.conn.escape_string(parameters.name().replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u2013", "-"))
-    docName = self.conn.escape_string(parameters.document().replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u2013", "-"))
+    refName = parameters.name()
+    docName = parameters.document()
     cName = parameters.contributor()
     refExc = parameters.description()
     try:
@@ -6790,7 +6786,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
       if (rs.rowcount == -1):
         exceptionText = 'Error adding persona characteristic ' + pDesc
         raise DatabaseProxyException(exceptionText) 
-
+      session.commit()
       self.addPersonaCharacteristicReferences(pcId,grounds,warrant,rebuttal)
       session.commit()
       rs.close()
@@ -7698,15 +7694,9 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
   def addTaskCharacteristic(self,parameters):
     tcId = self.newId()
-    taskName = self.conn.connection()
-    taskName = taskName.connection
-    taskName = taskName.escape_string(parameters.task())
-    qualName = self.conn.connection()
-    qualName = qualName.connection
-    qualName = qualName.escape_string(parameters.qualifier())
-    cDesc = self.conn.connection()
-    cDesc = cDesc.connection
-    cDesc = cDesc.escape_string(parameters.characteristic())
+    taskName = self.conn.connection().connection.escape_string(parameters.task())
+    qualName = self.conn.connection().connection.escape_string(parameters.qualifier())
+    cDesc = self.conn.connection().connection.escape_string(parameters.characteristic())
     grounds = parameters.grounds()
     warrant = parameters.warrant()
     rebuttal = parameters.rebuttal()

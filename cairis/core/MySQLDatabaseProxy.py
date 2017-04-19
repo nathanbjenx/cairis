@@ -12134,7 +12134,7 @@ class MySQLDatabaseProxy(DatabaseProxy.DatabaseProxy):
 
     try:
       dbEngine = create_engine('mysql+mysqldb://root'+':'+rPasswd+'@'+dbHost+':'+str(dbPort))
-      tmpConn = scoped_session(sessionmaker(bind=dbEngine, autocommit=True)))
+      tmpConn = scoped_session(sessionmaker(bind=dbEngine, autocommit=True))
       stmt = 'drop database if exists `' + dbName + '`'
       session = tmpConn()
       rs = session.execute(stmt)

@@ -1229,6 +1229,7 @@ function fillSvgViewer(data){
   svgDiv.html(xmlString);
   $("svg").attr("id","svg-id");
   activeElement("svgViewer");
+  svgSaver();
   var panZoomInstance = svgPanZoom('#svg-id', {
     zoomEnabled: true,
     controlIconsEnabled: true,
@@ -1237,6 +1238,17 @@ function fillSvgViewer(data){
     minZoom: 0.2
   });
 }
+
+function svgSaver(svgXml){
+  $('#superDownloadDiv').html(
+    $('<a>')
+      .attr('href-lang', 'image/svg+xml')
+      .attr('href', 'data:image/svg+xml;utf8,' +  unescape($('svg')[0].outerHTML))
+      .text('Download')
+  );
+  var x = $('#superDownloadDiv');
+}
+
 
 // finding the lowest label in the table
 function findLabel() {

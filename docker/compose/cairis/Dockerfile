@@ -14,11 +14,7 @@ RUN chown www-data /images
 RUN chgrp www-data /images
 RUN git clone https://github.com/failys/cairis /cairis
 COPY cairis.cnf /
-COPY setupDb.sh /
 COPY startServer.sh /
 COPY addAccount.sh /
 EXPOSE 8000
-CMD [ "setupDb.sh" ]
-CMD [ "addAccount.sh", "test", "test" ]
-CMD [ "addAccount.sh", "test2", "test2" ]
-CMD ["./startServer.sh"]
+RUN /startServer.sh &

@@ -2,13 +2,30 @@ version: '3'
 services:
   cairis-mysql:
     image: mysql:5.7
+    volumes:
+      - ../../cairis/config/createdb.sql:/sqlInit/createdb.sql
+      - ../../cairis/sql/init.sql:/sqlInit/init.sql
+      - ../../cairis/sql/procs.sql:/sqlInit/procs.sql
+      - ./db/create_user.sql:/sqlInit/create_user.sql
+      - ./db/addAccount.sh:/addAccount.sh
+
+      - ./db/setupDb.sh:/docker-entrypoint-initdb.d/1_setupDb.sh
+      - ./db/cairis_user_database.sql:/docker-entrypoint-initdb.d/2_add_cairis_user_database.sql
+      - ./db/add_test_accounts.sh:/docker-entrypoint-initdb.d/3_add_test_accounts.sh
+    expose:
+      - "3306"
     environment: 
       MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: mysql_default
+      MYSQL_USER: cairis_test
+      MYSQL_PASSWORD: cairis_test
 
   cairis:
     build:
-      context: ./cairis
+      context: ../../
+      dockerfile: ./docker/compose/cairis/Dockerfile
     depends_on:
       - cairis-mysql
     ports: 
       - 80:8000
+    command: /startServer.sh

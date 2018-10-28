@@ -22,8 +22,8 @@ services:
 
   cairis:
     build:
-      context: ../../
-      dockerfile: ./docker/compose/cairis/Dockerfile
+      context: ./
+      dockerfile: ./cairis/Dockerfile
     depends_on:
       - cairis-mysql
     ports: 
